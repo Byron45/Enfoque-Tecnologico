@@ -181,14 +181,8 @@
   user-select: none;
   -webkit-user-select: none;
   -webkit-user-drag: none;
-  transform-origin: 2.857% 7.407%;
-  transition: transform .09s ease, filter .09s ease;
   filter: drop-shadow(0 1px 2px rgba(2, 6, 23, .55));
 }
-
-/* La pose por modo (idle/interactive/pressed) se aplica por JS directo al
-   estilo del <img> (ver CustomCursor.tsx); esta transición es lo único que
-   necesita CSS para que el cambio se vea animado en vez de instantáneo. */
 
 @media (pointer: coarse) {
   .custom-hummingbird-cursor {

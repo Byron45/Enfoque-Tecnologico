@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
-import hummingbirdCursorUrl from '../assets/hummingbird-cursor.png';
+import idleUrl from '../assets/hummingbird-cursor.png';
+import hoverUrl from '../assets/hummingbird-cursor-hover.png';
+import pressedUrl from '../assets/hummingbird-cursor-clic.png';
 
 const INTERACTIVE_SELECTOR = [
   'button',
@@ -19,28 +21,29 @@ const INTERACTIVE_SELECTOR = [
 // necesario porque position:fixed no se ve de forma fiable en pantalla completa.
 const CROSSHAIR_SELECTOR = '[data-cursor="crosshair"]';
 
-// El archivo real mide 70 × 54 px y tiene 2 px transparentes de margen.
-// Lo mostramos a menos de la mitad del tamaño que tenía el cursor original.
-const DISPLAY_WIDTH = 34;
-const DISPLAY_HEIGHT = (54 / 70) * DISPLAY_WIDTH;
+type Pose = 'idle' | 'interactive' | 'pressed';
 
-// La punta del pico está en x=2, y=4 dentro del PNG (incluyendo el margen).
-// Estas coordenadas hacen que el punto real del mouse coincida con el pico.
-const HOTSPOT_X = (2 / 70) * DISPLAY_WIDTH;
-const HOTSPOT_Y = (4 / 54) * DISPLAY_HEIGHT;
+// Cada imagen es una pose real (alas plegadas / desplegadas / en aterrizaje),
+// recortada a su contenido. Como cada una tiene su propia proporción, el alto
+// se calcula a partir del ancho para no deformarlas, y el hotspot del pico se
+// da como fracción (x,y) del tamaño ya recortado de esa imagen específica.
+const DISPLAY_WIDTH = 74;
 
-// La pose (escala/rotación) se aplica por JS directo al <img>, no por CSS
-// condicionado a [data-mode], para que no dependa de la cascada de estilos.
-const POSE_TRANSFORM: Record<'idle' | 'interactive' | 'pressed', string> = {
-  idle: 'none',
-  interactive: 'scale(1.1) rotate(-7deg)',
-  pressed: 'scale(.86) rotate(9deg)'
+const POSES: Record<Pose, { src: string; width: number; height: number; hotspotXRatio: number; hotspotYRatio: number }> = {
+  idle: { src: idleUrl, width: 961, height: 688, hotspotXRatio: 0.0062, hotspotYRatio: 0.0603 },
+  interactive: { src: hoverUrl, width: 1028, height: 760, hotspotXRatio: 0.0058, hotspotYRatio: 0.1836 },
+  pressed: { src: pressedUrl, width: 1056, height: 615, hotspotXRatio: 0.0057, hotspotYRatio: 0.6260 }
 };
 
-const POSE_FILTER: Record<'idle' | 'interactive' | 'pressed', string> = {
-  idle: 'drop-shadow(0 1px 2px rgba(2, 6, 23, .55))',
-  interactive: 'drop-shadow(0 1px 2px rgba(2, 6, 23, .55)) drop-shadow(0 0 4px rgba(34, 211, 238, .35))',
-  pressed: 'drop-shadow(0 1px 2px rgba(2, 6, 23, .55))'
+const poseMetrics = (pose: Pose) => {
+  const config = POSES[pose];
+  const displayHeight = DISPLAY_WIDTH * (config.height / config.width);
+  return {
+    src: config.src,
+    displayHeight,
+    hotspotX: DISPLAY_WIDTH * config.hotspotXRatio,
+    hotspotY: displayHeight * config.hotspotYRatio
+  };
 };
 
 const CustomCursor = () => {
@@ -48,6 +51,15 @@ const CustomCursor = () => {
   const imgRef = useRef<HTMLImageElement | null>(null);
   const frameRef = useRef<number | null>(null);
   const lastPointRef = useRef({ x: -200, y: -200 });
+  const poseRef = useRef<Pose>('idle');
+  const hotspotRef = useRef(poseMetrics('idle'));
+
+  useEffect(() => {
+    (['idle', 'interactive', 'pressed'] as Pose[]).forEach((pose) => {
+      const image = new Image();
+      image.src = POSES[pose].src;
+    });
+  }, []);
 
   useEffect(() => {
     const finePointer = window.matchMedia('(pointer: fine)');
@@ -66,15 +78,19 @@ const CustomCursor = () => {
       frameRef.current = window.requestAnimationFrame(() => {
         frameRef.current = null;
         const { x, y } = lastPointRef.current;
-        cursor.style.transform = `translate3d(${x - HOTSPOT_X}px, ${y - HOTSPOT_Y}px, 0)`;
+        const { hotspotX, hotspotY } = hotspotRef.current;
+        cursor.style.transform = `translate3d(${x - hotspotX}px, ${y - hotspotY}px, 0)`;
       });
     };
 
-    const applyPose = (pose: 'idle' | 'interactive' | 'pressed') => {
-      if (cursor.dataset.mode === pose) return;
-      cursor.dataset.mode = pose;
-      img.style.transform = POSE_TRANSFORM[pose];
-      img.style.filter = POSE_FILTER[pose];
+    const applyPose = (pose: Pose) => {
+      if (poseRef.current === pose) return;
+      poseRef.current = pose;
+      const metrics = poseMetrics(pose);
+      hotspotRef.current = metrics;
+      img.src = metrics.src;
+      cursor.style.width = `${DISPLAY_WIDTH}px`;
+      cursor.style.height = `${metrics.displayHeight}px`;
     };
 
     const setMode = (target: EventTarget | null, pressed = false) => {
@@ -91,19 +107,19 @@ const CustomCursor = () => {
     };
 
     const move = (event: PointerEvent) => {
-      renderAt(event.clientX, event.clientY);
       setMode(event.target);
+      renderAt(event.clientX, event.clientY);
     };
 
     const down = (event: PointerEvent) => {
-      renderAt(event.clientX, event.clientY);
       setMode(event.target, true);
+      renderAt(event.clientX, event.clientY);
     };
 
     const up = (event: PointerEvent) => {
-      renderAt(event.clientX, event.clientY);
       const element = document.elementFromPoint(event.clientX, event.clientY);
       setMode(element);
+      renderAt(event.clientX, event.clientY);
     };
 
     const hide = () => {
@@ -136,10 +152,9 @@ const CustomCursor = () => {
       aria-hidden="true"
       className="custom-hummingbird-cursor"
       data-visible="false"
-      data-mode="idle"
-      style={{ width: DISPLAY_WIDTH, height: DISPLAY_HEIGHT }}
+      style={{ width: DISPLAY_WIDTH, height: poseMetrics('idle').displayHeight }}
     >
-      <img ref={imgRef} src={hummingbirdCursorUrl} alt="" draggable={false} />
+      <img ref={imgRef} src={idleUrl} alt="" draggable={false} />
     </div>
   );
 };
