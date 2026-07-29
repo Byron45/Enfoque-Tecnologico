@@ -294,6 +294,21 @@ const MapasPage = () => {
   const zoomIn = () => setZoom((previous) => Math.min(previous + 0.2, 4));
   const zoomOut = () => setZoom((previous) => Math.max(previous - 0.2, 0.55));
 
+  useEffect(() => {
+    const node = viewerRef.current;
+    if (!node) return;
+
+    const handleWheel = (event: WheelEvent) => {
+      if (!hasVisibleMap) return;
+      event.preventDefault();
+      const delta = event.deltaY > 0 ? -0.12 : 0.12;
+      setZoom((previous) => Math.min(4, Math.max(0.55, previous + delta)));
+    };
+
+    node.addEventListener('wheel', handleWheel, { passive: false });
+    return () => node.removeEventListener('wheel', handleWheel);
+  }, [hasVisibleMap]);
+
   const updateHoverInfo = (event: React.PointerEvent<HTMLDivElement>) => {
     if (!raster || !imageRef.current) {
       setHoverInfo(null);

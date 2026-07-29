@@ -182,18 +182,28 @@
   -webkit-user-select: none;
   -webkit-user-drag: none;
   transform-origin: 2.857% 7.407%;
-  transition: transform .07s ease, filter .07s ease;
+  transition: filter .07s ease;
   filter: drop-shadow(0 1px 2px rgba(2, 6, 23, .55));
+  animation: hummingbird-flap .22s ease-in-out infinite;
+}
+
+/* Aleteo continuo: las alas laten sobre el mismo punto (el pico), así que la
+   posición real del cursor no se mueve mientras "vuela". Puramente estético. */
+@keyframes hummingbird-flap {
+  0%, 100% { transform: rotate(-5deg) scaleY(.94); }
+  50% { transform: rotate(5deg) scaleY(1.05); }
 }
 
 .custom-hummingbird-cursor[data-mode='interactive'] img {
-  transform: scale(1.06);
+  animation-duration: .14s;
   filter:
     drop-shadow(0 1px 2px rgba(2, 6, 23, .55))
     drop-shadow(0 0 4px rgba(34, 211, 238, .35));
 }
 
 .custom-hummingbird-cursor[data-mode='pressed'] img {
+  animation: none;
+  transition: transform .07s ease, filter .07s ease;
   transform: scale(.90) rotate(2deg);
 }
 

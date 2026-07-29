@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import hummingbirdCursorUrl from '../assets/hummingbird-cursor.png';
 
 const INTERACTIVE_SELECTOR = [
@@ -33,6 +34,19 @@ const CustomCursor = () => {
   const crosshairRef = useRef<SVGSVGElement | null>(null);
   const frameRef = useRef<number | null>(null);
   const lastPointRef = useRef({ x: -200, y: -200 });
+  // El cursor se pinta con position:fixed, pero el navegador solo compone ese
+  // tipo de elementos dentro del árbol del elemento en pantalla completa. Sin
+  // esto, el cursor (y la cruz) desaparecen al activar pantalla completa en el mapa.
+  const [portalTarget, setPortalTarget] = useState<Element>(() => document.body);
+
+  useEffect(() => {
+    const syncFullscreenTarget = () => {
+      setPortalTarget(document.fullscreenElement || document.body);
+    };
+
+    document.addEventListener('fullscreenchange', syncFullscreenTarget);
+    return () => document.removeEventListener('fullscreenchange', syncFullscreenTarget);
+  }, []);
 
   useEffect(() => {
     const finePointer = window.matchMedia('(pointer: fine)');
@@ -116,7 +130,7 @@ const CustomCursor = () => {
     };
   }, []);
 
-  return (
+  return createPortal(
     <>
       <div
         ref={cursorRef}
@@ -147,7 +161,8 @@ const CustomCursor = () => {
         <circle cx="14" cy="14" r="2.75" fill="none" stroke="white" strokeWidth="2" />
         <circle cx="14" cy="14" r="2.75" fill="none" stroke="#0f172a" strokeWidth="0.85" />
       </svg>
-    </>
+    </>,
+    portalTarget
   );
 };
 
