@@ -16,17 +16,11 @@ const INTERACTIVE_SELECTOR = [
   '.cursor-interactive'
 ].join(',');
 
-// Dentro de esta zona (el visor de mapas) el colibrí se oculta: esa página
-// dibuja su propia cruz de precisión pegada al mapa (ver MapasPage.tsx),
-// necesario porque position:fixed no se ve de forma fiable en pantalla completa.
+
 const CROSSHAIR_SELECTOR = '[data-cursor="crosshair"]';
 
 type Pose = 'idle' | 'interactive' | 'pressed';
 
-// Cada imagen es una pose real (alas plegadas / desplegadas / en aterrizaje),
-// recortada a su contenido. Como cada una tiene su propia proporción, el alto
-// se calcula a partir del ancho para no deformarlas, y el hotspot del pico se
-// da como fracción (x,y) del tamaño ya recortado de esa imagen específica.
 const DISPLAY_WIDTH = 74;
 
 const POSES: Record<Pose, { src: string; width: number; height: number; hotspotXRatio: number; hotspotYRatio: number }> = {

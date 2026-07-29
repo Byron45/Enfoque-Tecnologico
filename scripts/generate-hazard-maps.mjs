@@ -1,15 +1,3 @@
-// Genera los mapas de amenaza como JSON estático en public/mapas/.
-// Esos archivos se despliegan junto al sitio y MapasPage.tsx los lee
-// directamente, sin depender de Supabase ni del navegador de quien los publica.
-//
-// Uso:
-//   node scripts/generate-hazard-maps.mjs ["ruta a la carpeta con los TIF"]
-//
-// Por defecto busca una carpeta llamada "Amenazas Naturales" junto al
-// repositorio (../Amenazas Naturales).
-//
-// Mantén esta lista de recursos sincronizada con src/config/mapResources.ts.
-
 import { fromFile } from 'geotiff';
 import fs from 'fs';
 import path from 'path';
