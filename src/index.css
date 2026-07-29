@@ -186,19 +186,9 @@
   filter: drop-shadow(0 1px 2px rgba(2, 6, 23, .55));
 }
 
-/* Sin animación en bucle: la sensación de aleteo viene de que la pose cambia
-   (idle/interactive/pressed) cada vez que el mouse cruza un botón, igual que
-   en la versión original. Un loop infinito aquí se ve como un temblor constante. */
-.custom-hummingbird-cursor[data-mode='interactive'] img {
-  transform: scale(1.08) rotate(-6deg);
-  filter:
-    drop-shadow(0 1px 2px rgba(2, 6, 23, .55))
-    drop-shadow(0 0 4px rgba(34, 211, 238, .35));
-}
-
-.custom-hummingbird-cursor[data-mode='pressed'] img {
-  transform: scale(.88) rotate(8deg);
-}
+/* La pose por modo (idle/interactive/pressed) se aplica por JS directo al
+   estilo del <img> (ver CustomCursor.tsx); esta transición es lo único que
+   necesita CSS para que el cambio se vea animado en vez de instantáneo. */
 
 @media (pointer: coarse) {
   .custom-hummingbird-cursor {

@@ -29,8 +29,23 @@ const DISPLAY_HEIGHT = (54 / 70) * DISPLAY_WIDTH;
 const HOTSPOT_X = (2 / 70) * DISPLAY_WIDTH;
 const HOTSPOT_Y = (4 / 54) * DISPLAY_HEIGHT;
 
+// La pose (escala/rotación) se aplica por JS directo al <img>, no por CSS
+// condicionado a [data-mode], para que no dependa de la cascada de estilos.
+const POSE_TRANSFORM: Record<'idle' | 'interactive' | 'pressed', string> = {
+  idle: 'none',
+  interactive: 'scale(1.1) rotate(-7deg)',
+  pressed: 'scale(.86) rotate(9deg)'
+};
+
+const POSE_FILTER: Record<'idle' | 'interactive' | 'pressed', string> = {
+  idle: 'drop-shadow(0 1px 2px rgba(2, 6, 23, .55))',
+  interactive: 'drop-shadow(0 1px 2px rgba(2, 6, 23, .55)) drop-shadow(0 0 4px rgba(34, 211, 238, .35))',
+  pressed: 'drop-shadow(0 1px 2px rgba(2, 6, 23, .55))'
+};
+
 const CustomCursor = () => {
   const cursorRef = useRef<HTMLDivElement | null>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
   const frameRef = useRef<number | null>(null);
   const lastPointRef = useRef({ x: -200, y: -200 });
 
@@ -39,7 +54,8 @@ const CustomCursor = () => {
     if (!finePointer.matches) return;
 
     const cursor = cursorRef.current;
-    if (!cursor) return;
+    const img = imgRef.current;
+    if (!cursor || !img) return;
 
     document.documentElement.classList.add('custom-cursor-enabled');
 
@@ -54,17 +70,24 @@ const CustomCursor = () => {
       });
     };
 
+    const applyPose = (pose: 'idle' | 'interactive' | 'pressed') => {
+      if (cursor.dataset.mode === pose) return;
+      cursor.dataset.mode = pose;
+      img.style.transform = POSE_TRANSFORM[pose];
+      img.style.filter = POSE_FILTER[pose];
+    };
+
     const setMode = (target: EventTarget | null, pressed = false) => {
       const element = target instanceof Element ? target : null;
       const overCrosshair = Boolean(element?.closest(CROSSHAIR_SELECTOR));
       cursor.dataset.visible = overCrosshair ? 'false' : 'true';
 
       if (pressed) {
-        cursor.dataset.mode = 'pressed';
+        applyPose('pressed');
         return;
       }
 
-      cursor.dataset.mode = element?.closest(INTERACTIVE_SELECTOR) ? 'interactive' : 'idle';
+      applyPose(element?.closest(INTERACTIVE_SELECTOR) ? 'interactive' : 'idle');
     };
 
     const move = (event: PointerEvent) => {
@@ -85,7 +108,7 @@ const CustomCursor = () => {
 
     const hide = () => {
       cursor.dataset.visible = 'false';
-      cursor.dataset.mode = 'idle';
+      applyPose('idle');
     };
 
     window.addEventListener('pointermove', move, { passive: true });
@@ -116,7 +139,7 @@ const CustomCursor = () => {
       data-mode="idle"
       style={{ width: DISPLAY_WIDTH, height: DISPLAY_HEIGHT }}
     >
-      <img src={hummingbirdCursorUrl} alt="" draggable={false} />
+      <img ref={imgRef} src={hummingbirdCursorUrl} alt="" draggable={false} />
     </div>
   );
 };
