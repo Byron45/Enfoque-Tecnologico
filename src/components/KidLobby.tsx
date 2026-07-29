@@ -116,29 +116,31 @@ const KidLobby = () => {
           <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full border-[38px] border-pink-400/55" />
           <div className="absolute left-10 top-1/2 h-24 w-24 rounded-full bg-lime-300/35 blur-xl" />
 
-          <div className="relative z-10 flex h-full flex-col justify-between gap-6">
-            <div>
+          <div className="relative z-10 flex h-full flex-col gap-6">
+            <div className="flex items-center justify-between gap-4">
               <div className="inline-flex items-center gap-2 rounded-full border-2 border-white/40 bg-white/15 px-4 py-2 text-[11px] font-black uppercase tracking-[.2em] backdrop-blur-md">
                 <Sparkles size={16} className="text-yellow-300" /> Distrito 18D03
               </div>
 
-              <h1 className="mt-5 text-[3.35rem] font-black leading-[.86] tracking-tight md:text-[5rem]">
-                MISIÓN
-                <span className="mt-2 block text-yellow-300 drop-shadow-[0_5px_0_rgba(8,47,120,.35)]">PREVENCIÓN</span>
-              </h1>
-
-              <p className="mt-5 max-w-xl text-base font-bold leading-relaxed text-cyan-50 md:text-lg">
-                Aprende jugando, supera retos y conviértete en un héroe de la seguridad para tu escuela y tu comunidad.
-              </p>
-            </div>
-
-            <div className="mx-auto flex w-full max-w-[460px] items-center justify-center py-2">
-              <div className="mission-logo-frame relative flex h-64 w-64 items-center justify-center overflow-hidden rounded-full border-[10px] shadow-[0_22px_65px_rgba(1,21,70,.35)] md:h-72 md:w-72">
+              <div className="mission-logo-frame relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border-[6px] shadow-[0_14px_30px_rgba(1,21,70,.35)] md:h-24 md:w-24">
                 <img src={LOGO_URL} alt="Logo Misión Prevención 18D03" className="mission-logo-image relative" />
               </div>
             </div>
 
+            <div>
+              <h1 className="text-[3.35rem] font-black leading-[.86] tracking-tight md:text-[5rem]">
+                MISIÓN
+                <span className="mt-2 block bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 bg-clip-text text-transparent drop-shadow-[0_5px_0_rgba(8,47,120,.2)]">PREVENCIÓN</span>
+              </h1>
 
+              <p className="mt-5 max-w-xl text-base font-bold leading-relaxed text-cyan-50 md:text-lg">
+                Plataforma de educación en Gestión de Riesgos de Desastres para el distrito 18D03.
+              </p>
+
+              <p className="mt-4 max-w-xl text-lg font-black leading-snug text-yellow-300 md:text-xl">
+                Conoce el riesgo, actúa con seguridad y protege tu comunidad.
+              </p>
+            </div>
           </div>
         </aside>
 
