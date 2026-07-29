@@ -15,6 +15,7 @@ export type MapResource = {
   storagePrefix: string;
   fileKeywords: string[];
   accent: string;
+  legendLabels?: Record<number, string>;
 };
 
 // Subtítulos de tarjetas vacíos para mantener las tarjetas limpias y sin textos secundarios.
@@ -26,7 +27,7 @@ export const MAP_RESOURCES: MapResource[] = [
     subtitle: '',
     description: 'Mapa temático de susceptibilidad por inundaciones. Permite identificar niveles de amenaza, cambiar simbología, activar instituciones y revisar zonas vulnerables.',
     storagePrefix: 'inundaciones',
-    fileKeywords: ['inundaciones', 'inundacion'],
+    fileKeywords: ['inundaciones', 'inundacion', 'inun_reclass1', 'inun_reclass', 'inun'],
     accent: 'from-cyan-500 to-blue-600'
   },
   {
@@ -37,7 +38,14 @@ export const MAP_RESOURCES: MapResource[] = [
     description: 'Mapa temático de amenaza volcánica. Permite revisar zonas expuestas, cambiar simbología y cruzar la información con instituciones educativas.',
     storagePrefix: 'volcanico',
     fileKeywords: ['peligro_volcanico', 'peligro_volcanico1', 'volcanico', 'volcan'],
-    accent: 'from-orange-500 to-red-600'
+    accent: 'from-orange-500 to-red-600',
+    legendLabels: {
+      1: 'Flujo de lahares, probabilidad menor',
+      2: 'Multipeligro, probabilidad mayor',
+      3: 'Avalancha de escombros, probabilidad menor',
+      4: 'Avalancha de escombros, probabilidad mayor',
+      5: 'Multipeligro, probabilidad menor'
+    }
   },
   {
     id: 'deslizamientos',

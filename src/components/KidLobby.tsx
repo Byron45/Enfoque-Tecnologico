@@ -138,18 +138,7 @@ const KidLobby = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { icon: Rocket, title: '3 misiones', color: 'bg-orange-400' },
-                { icon: Map, title: 'Mapas', color: 'bg-emerald-400' },
-                { icon: Video, title: 'Videos', color: 'bg-violet-500' }
-              ].map(({ icon: Icon, title, color }) => (
-                <div key={title} className="rounded-2xl border-2 border-white/35 bg-white/15 p-3 text-center backdrop-blur-md">
-                  <div className={`mx-auto flex h-10 w-10 items-center justify-center rounded-xl ${color} shadow-lg`}><Icon size={20} /></div>
-                  <p className="mt-2 text-[11px] font-black uppercase tracking-wider">{title}</p>
-                </div>
-              ))}
-            </div>
+
           </div>
         </aside>
 

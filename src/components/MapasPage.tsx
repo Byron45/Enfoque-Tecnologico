@@ -42,7 +42,7 @@ type HoverInfo = {
   color: string;
 } | null;
 
-type RenderMode = 'raster' | 'tif' | 'preview' | 'local' | 'fallback';
+type RenderMode = 'raster' | 'tif' | 'preview' | 'local' | 'static' | 'fallback';
 
 const getThreatColor = (value?: number) => susceptibilityPalettes.institucional.find((item) => item.value === value)?.color || '#ef4444';
 
@@ -73,7 +73,12 @@ const MapasPage = () => {
   const [activePoint, setActivePoint] = useState<InstitutionPoint | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
 
-  const selectedLegend = useMemo(() => susceptibilityPalettes[activePalette], [activePalette]);
+  const selectedLegend = useMemo(() => {
+    const base = susceptibilityPalettes[activePalette];
+    const overrides = selectedResource.legendLabels;
+    if (!overrides) return base;
+    return base.map((item) => ({ ...item, label: overrides[item.value] || item.label }));
+  }, [activePalette, selectedResource]);
   const schoolPoints = useMemo(() => (raster?.points || []).filter((point) => point.insideMap && point.xRatio !== undefined && point.yRatio !== undefined), [raster]);
   const hasVisibleMap = Boolean(mapaUrl);
 
@@ -89,6 +94,16 @@ const MapasPage = () => {
       (await getLocalHazardMapIds()).forEach((id) => ids.add(id));
     } catch (error) {
       console.warn('No se pudo leer el listado local de mapas:', error);
+    }
+
+    try {
+      const response = await fetch('/mapas/manifest.json', { cache: 'no-store' });
+      if (response.ok) {
+        const manifest = await response.json() as { ids?: string[] };
+        (manifest.ids || []).forEach((id) => ids.add(id));
+      }
+    } catch (error) {
+      console.warn('No se pudo leer el manifiesto de mapas publicados:', error);
     }
 
     if (isSupabaseConfigured) {
@@ -205,6 +220,18 @@ const MapasPage = () => {
       return false;
     };
 
+    const loadStatic = async () => {
+      try {
+        const loadedRaster = await fetchPortableRaster(`/mapas/${selectedResource.id}.json`);
+        if (cancelled) return false;
+        applyRaster(loadedRaster, 'static', 'Mapa oficial listo. Puedes acercar, mover, cambiar colores y explorar las escuelas.');
+        return true;
+      } catch (error) {
+        console.warn('No se pudo cargar el mapa estático publicado:', error);
+        return false;
+      }
+    };
+
     const load = async () => {
       setIsLoading(true);
       setRaster(null);
@@ -220,13 +247,19 @@ const MapasPage = () => {
       resetView();
 
       // La versión publicada en Supabase tiene prioridad para evitar que una copia local
-      // antigua oculte el mapa que deben ver todos los estudiantes.
+      // antigua oculte el mapa que deben ver todos los estudiantes. Si Supabase no tiene
+      // el mapa (o no está configurado), usamos el archivo estático incluido en el sitio
+      // -disponible para cualquier visitante sin depender de este navegador- y solo al
+      // final la copia local, pensada como vista previa del propio dispositivo del admin.
       const remoteLoaded = await loadRemote();
       if (!remoteLoaded) {
-        const localLoaded = await loadLocal();
-        if (!localLoaded && !cancelled) {
-          setEstado('Este mapa todavía no está disponible. Pide a tu docente que lo prepare.');
-          setRenderMode('fallback');
+        const staticLoaded = await loadStatic();
+        if (!staticLoaded) {
+          const localLoaded = await loadLocal();
+          if (!localLoaded && !cancelled) {
+            setEstado('Este mapa todavía no está disponible. Pide a tu docente que lo prepare.');
+            setRenderMode('fallback');
+          }
         }
       }
 
@@ -373,7 +406,7 @@ const MapasPage = () => {
                 <div className="flex gap-2"><ControlButton label="Alejar" onClick={zoomOut}><Minus size={17} /></ControlButton><ControlButton label="Acercar" onClick={zoomIn}><Plus size={17} /></ControlButton><ControlButton label="Reiniciar" onClick={resetView}><RotateCcw size={17} /></ControlButton><ControlButton label="Pantalla completa" onClick={toggleFullscreen}><Maximize2 size={17} /></ControlButton></div>
               </div>
 
-              <div ref={viewerRef} data-cursor="interactive" onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={() => { setDragging(false); setHoverInfo(null); setActivePoint(null); }} onPointerCancel={() => { setDragging(false); setHoverInfo(null); setActivePoint(null); }} className={`relative h-[58vh] min-h-[420px] max-h-[640px] overflow-hidden rounded-[1.35rem] border border-white/10 bg-white select-none ${dragging ? 'cursor-grabbing' : hasVisibleMap ? 'cursor-grab' : 'cursor-default'}`}>
+              <div ref={viewerRef} data-cursor="crosshair" onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={() => { setDragging(false); setHoverInfo(null); setActivePoint(null); }} onPointerCancel={() => { setDragging(false); setHoverInfo(null); setActivePoint(null); }} className={`relative h-[58vh] min-h-[420px] max-h-[640px] overflow-hidden rounded-[1.35rem] border border-white/10 bg-white select-none ${dragging ? 'cursor-grabbing' : hasVisibleMap ? 'cursor-grab' : 'cursor-default'}`}>
                 {(isLoading || isRecoloring) && <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/55 backdrop-blur-[2px]"><div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm font-black uppercase tracking-[0.18em] text-slate-900 shadow-xl">{isLoading ? 'Cargando mapa...' : 'Cambiando colores...'}</div></div>}
 
                 {hasVisibleMap ? (
@@ -393,9 +426,9 @@ const MapasPage = () => {
 
                 {hasVisibleMap && <div className="absolute left-4 top-4 rounded-2xl bg-white/90 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-slate-900 shadow border border-slate-200">Zoom: {Math.round(zoom * 100)}%</div>}
                 {hasVisibleMap && <div className="absolute bottom-4 left-4 rounded-2xl bg-white/90 px-4 py-3 text-xs font-bold text-slate-800 shadow border border-slate-200 flex items-center gap-2"><Move size={16} className="text-cyan-600" /> Mover con el mouse o touch</div>}
-                {hasVisibleMap && <div className="absolute bottom-4 right-4 rounded-2xl bg-white/90 px-4 py-3 text-xs font-bold text-slate-800 shadow border border-slate-200">Modo: {renderMode === 'local' ? 'Disponible en este dispositivo' : renderMode === 'raster' ? 'Raster interactivo' : renderMode === 'tif' ? 'GeoTIFF' : renderMode === 'preview' ? 'Vista publicada' : 'Base'}</div>}
+                {hasVisibleMap && <div className="absolute bottom-4 right-4 rounded-2xl bg-white/90 px-4 py-3 text-xs font-bold text-slate-800 shadow border border-slate-200">Modo: {renderMode === 'local' ? 'Disponible en este dispositivo' : renderMode === 'static' ? 'Mapa oficial' : renderMode === 'raster' ? 'Raster interactivo' : renderMode === 'tif' ? 'GeoTIFF' : renderMode === 'preview' ? 'Vista publicada' : 'Base'}</div>}
 
-                {hoverInfo && !activePoint && <div className="pointer-events-none absolute z-30 rounded-2xl bg-slate-950 px-4 py-3 text-white shadow-2xl border border-white/10" style={{ left: Math.min(hoverInfo.x + 16, (viewerRef.current?.clientWidth || 0) - 190), top: Math.max(12, hoverInfo.y - 62) }}><p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">Nivel de amenaza</p><div className="mt-1 flex items-center gap-2"><span className="h-4 w-4 rounded-full border border-white/20" style={{ backgroundColor: hoverInfo.color }} /><span className="text-lg font-black">{hoverInfo.label}</span></div><p className="text-[10px] font-bold text-slate-400">Valor raster: {hoverInfo.value}</p></div>}
+                {hoverInfo && !activePoint && <div className="pointer-events-none absolute z-30 max-w-[260px] rounded-2xl bg-slate-950 px-4 py-3 text-white shadow-2xl border border-white/10" style={{ left: Math.min(hoverInfo.x + 16, (viewerRef.current?.clientWidth || 0) - 260), top: Math.max(12, hoverInfo.y - 62) }}><p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">Nivel de amenaza</p><div className="mt-1 flex items-start gap-2"><span className="mt-1 h-4 w-4 shrink-0 rounded-full border border-white/20" style={{ backgroundColor: hoverInfo.color }} /><span className="text-lg font-black leading-snug">{hoverInfo.label}</span></div><p className="text-[10px] font-bold text-slate-400">Valor raster: {hoverInfo.value}</p></div>}
                 {activePoint && <div className="absolute right-4 top-4 z-30 max-w-sm rounded-2xl bg-slate-950 px-4 py-3 text-white shadow-2xl border border-white/10"><p className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-200">Institución educativa</p><h3 className="mt-1 text-lg font-black leading-tight">{activePoint.name}</h3><div className="mt-2 flex items-center gap-2"><span className="h-4 w-4 rounded-full border border-white/20" style={{ backgroundColor: getThreatColor(activePoint.threatValue) }} /><span className="text-sm font-bold text-slate-300">Amenaza: {activePoint.threatLabel || 'Sin dato'}</span></div></div>}
               </div>
             </div>
@@ -414,7 +447,7 @@ const MapasPage = () => {
 
               <PanelCard>
                 <p className="text-orange-300 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Leyenda</p><h2 className="text-2xl font-black mb-4">Susceptibilidad</h2>
-                <div className="space-y-3">{selectedLegend.map((item) => <div key={item.label} className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/55 p-3"><div className="flex items-center gap-3"><span className="h-6 w-10 rounded-lg border border-white/20" style={{ backgroundColor: item.color }} /><span className="font-black text-sm">{item.label}</span></div>{counts && <span className="text-[10px] font-bold text-slate-500">{counts[item.value]?.toLocaleString('es-EC')}</span>}</div>)}</div>
+                <div className="space-y-3">{selectedLegend.map((item) => <div key={item.value} className="flex items-start justify-between gap-3 rounded-2xl border border-white/10 bg-slate-950/55 p-3"><div className="flex items-start gap-3"><span className="mt-0.5 h-6 w-10 shrink-0 rounded-lg border border-white/20" style={{ backgroundColor: item.color }} /><span className="font-black text-sm leading-snug">{item.label}</span></div>{counts && <span className="shrink-0 text-[10px] font-bold text-slate-500">{counts[item.value]?.toLocaleString('es-EC')}</span>}</div>)}</div>
               </PanelCard>
 
               <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="rounded-[1.5rem] border border-emerald-300/20 bg-emerald-400/10 p-4">

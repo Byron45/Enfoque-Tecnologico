@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate:maps": "node scripts/generate-hazard-maps.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.7",

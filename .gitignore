@@ -1,0 +1,13 @@
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env
+.env.local
+
+# Editor/OS
+.DS_Store
+Thumbs.db
+
+# Claude Code local config
+.claude/

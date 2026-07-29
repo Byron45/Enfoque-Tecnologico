@@ -14,6 +14,8 @@ const INTERACTIVE_SELECTOR = [
   '.cursor-interactive'
 ].join(',');
 
+const CROSSHAIR_SELECTOR = '[data-cursor="crosshair"]';
+
 // El archivo real mide 70 × 54 px y tiene 2 px transparentes de margen.
 // Lo mostramos a menos de la mitad del tamaño que tenía el cursor original.
 const DISPLAY_WIDTH = 34;
@@ -24,8 +26,11 @@ const DISPLAY_HEIGHT = (54 / 70) * DISPLAY_WIDTH;
 const HOTSPOT_X = (2 / 70) * DISPLAY_WIDTH;
 const HOTSPOT_Y = (4 / 54) * DISPLAY_HEIGHT;
 
+const CROSSHAIR_SIZE = 28;
+
 const CustomCursor = () => {
   const cursorRef = useRef<HTMLDivElement | null>(null);
+  const crosshairRef = useRef<SVGSVGElement | null>(null);
   const frameRef = useRef<number | null>(null);
   const lastPointRef = useRef({ x: -200, y: -200 });
 
@@ -34,7 +39,8 @@ const CustomCursor = () => {
     if (!finePointer.matches) return;
 
     const cursor = cursorRef.current;
-    if (!cursor) return;
+    const crosshair = crosshairRef.current;
+    if (!cursor || !crosshair) return;
 
     document.documentElement.classList.add('custom-cursor-enabled');
 
@@ -46,10 +52,20 @@ const CustomCursor = () => {
         frameRef.current = null;
         const { x, y } = lastPointRef.current;
         cursor.style.transform = `translate3d(${x - HOTSPOT_X}px, ${y - HOTSPOT_Y}px, 0)`;
+        crosshair.style.transform = `translate3d(${x - CROSSHAIR_SIZE / 2}px, ${y - CROSSHAIR_SIZE / 2}px, 0)`;
       });
     };
 
+    const isCrosshairTarget = (target: EventTarget | null) => {
+      const element = target instanceof Element ? target : null;
+      return Boolean(element?.closest(CROSSHAIR_SELECTOR));
+    };
+
     const setMode = (target: EventTarget | null, pressed = false) => {
+      const overCrosshair = isCrosshairTarget(target);
+      crosshair.dataset.visible = overCrosshair ? 'true' : 'false';
+      cursor.dataset.visible = overCrosshair ? 'false' : 'true';
+
       if (pressed) {
         cursor.dataset.mode = 'pressed';
         return;
@@ -62,13 +78,11 @@ const CustomCursor = () => {
     const move = (event: PointerEvent) => {
       renderAt(event.clientX, event.clientY);
       setMode(event.target);
-      cursor.dataset.visible = 'true';
     };
 
     const down = (event: PointerEvent) => {
       renderAt(event.clientX, event.clientY);
       setMode(event.target, true);
-      cursor.dataset.visible = 'true';
     };
 
     const up = (event: PointerEvent) => {
@@ -80,6 +94,7 @@ const CustomCursor = () => {
     const hide = () => {
       cursor.dataset.visible = 'false';
       cursor.dataset.mode = 'idle';
+      crosshair.dataset.visible = 'false';
     };
 
     window.addEventListener('pointermove', move, { passive: true });
@@ -102,16 +117,37 @@ const CustomCursor = () => {
   }, []);
 
   return (
-    <div
-      ref={cursorRef}
-      aria-hidden="true"
-      className="custom-hummingbird-cursor"
-      data-visible="false"
-      data-mode="idle"
-      style={{ width: DISPLAY_WIDTH, height: DISPLAY_HEIGHT }}
-    >
-      <img src={hummingbirdCursorUrl} alt="" draggable={false} />
-    </div>
+    <>
+      <div
+        ref={cursorRef}
+        aria-hidden="true"
+        className="custom-hummingbird-cursor"
+        data-visible="false"
+        data-mode="idle"
+        style={{ width: DISPLAY_WIDTH, height: DISPLAY_HEIGHT }}
+      >
+        <img src={hummingbirdCursorUrl} alt="" draggable={false} />
+      </div>
+      <svg
+        ref={crosshairRef}
+        aria-hidden="true"
+        viewBox="0 0 28 28"
+        className="custom-crosshair-cursor"
+        data-visible="false"
+        style={{ width: CROSSHAIR_SIZE, height: CROSSHAIR_SIZE }}
+      >
+        <line x1="14" y1="1" x2="14" y2="9" stroke="white" strokeWidth="3" strokeLinecap="round" />
+        <line x1="14" y1="19" x2="14" y2="27" stroke="white" strokeWidth="3" strokeLinecap="round" />
+        <line x1="1" y1="14" x2="9" y2="14" stroke="white" strokeWidth="3" strokeLinecap="round" />
+        <line x1="19" y1="14" x2="27" y2="14" stroke="white" strokeWidth="3" strokeLinecap="round" />
+        <line x1="14" y1="1" x2="14" y2="9" stroke="#0f172a" strokeWidth="1.25" strokeLinecap="round" />
+        <line x1="14" y1="19" x2="14" y2="27" stroke="#0f172a" strokeWidth="1.25" strokeLinecap="round" />
+        <line x1="1" y1="14" x2="9" y2="14" stroke="#0f172a" strokeWidth="1.25" strokeLinecap="round" />
+        <line x1="19" y1="14" x2="27" y2="14" stroke="#0f172a" strokeWidth="1.25" strokeLinecap="round" />
+        <circle cx="14" cy="14" r="2.75" fill="none" stroke="white" strokeWidth="2" />
+        <circle cx="14" cy="14" r="2.75" fill="none" stroke="#0f172a" strokeWidth="0.85" />
+      </svg>
+    </>
   );
 };
 
