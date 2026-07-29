@@ -71,6 +71,7 @@ const MapasPage = () => {
   const [hoverInfo, setHoverInfo] = useState<HoverInfo>(null);
   const [showSchools, setShowSchools] = useState(true);
   const [activePoint, setActivePoint] = useState<InstitutionPoint | null>(null);
+  const [pointerPos, setPointerPos] = useState<{ x: number; y: number } | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
 
   const selectedLegend = useMemo(() => {
@@ -352,6 +353,8 @@ const MapasPage = () => {
 
   const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
     updateHoverInfo(event);
+    const rect = viewerRef.current?.getBoundingClientRect();
+    if (rect) setPointerPos({ x: event.clientX - rect.left, y: event.clientY - rect.top });
     if (!dragging) return;
     setPan({
       x: dragStart.current.panX + event.clientX - dragStart.current.x,
@@ -421,7 +424,7 @@ const MapasPage = () => {
                 <div className="flex gap-2"><ControlButton label="Alejar" onClick={zoomOut}><Minus size={17} /></ControlButton><ControlButton label="Acercar" onClick={zoomIn}><Plus size={17} /></ControlButton><ControlButton label="Reiniciar" onClick={resetView}><RotateCcw size={17} /></ControlButton><ControlButton label="Pantalla completa" onClick={toggleFullscreen}><Maximize2 size={17} /></ControlButton></div>
               </div>
 
-              <div ref={viewerRef} data-cursor="crosshair" onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={() => { setDragging(false); setHoverInfo(null); setActivePoint(null); }} onPointerCancel={() => { setDragging(false); setHoverInfo(null); setActivePoint(null); }} className={`relative h-[58vh] min-h-[420px] max-h-[640px] overflow-hidden rounded-[1.35rem] border border-white/10 bg-white select-none ${dragging ? 'cursor-grabbing' : hasVisibleMap ? 'cursor-grab' : 'cursor-default'}`}>
+              <div ref={viewerRef} data-cursor="crosshair" onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={() => { setDragging(false); setHoverInfo(null); setActivePoint(null); setPointerPos(null); }} onPointerCancel={() => { setDragging(false); setHoverInfo(null); setActivePoint(null); setPointerPos(null); }} className={`relative h-[58vh] min-h-[420px] max-h-[640px] overflow-hidden rounded-[1.35rem] border border-white/10 bg-white select-none ${dragging ? 'cursor-grabbing' : hasVisibleMap ? 'cursor-grab' : 'cursor-default'}`}>
                 {(isLoading || isRecoloring) && <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/55 backdrop-blur-[2px]"><div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm font-black uppercase tracking-[0.18em] text-slate-900 shadow-xl">{isLoading ? 'Cargando mapa...' : 'Cambiando colores...'}</div></div>}
 
                 {hasVisibleMap ? (
@@ -445,6 +448,21 @@ const MapasPage = () => {
 
                 {hoverInfo && !activePoint && <div className="pointer-events-none absolute z-30 max-w-[260px] rounded-2xl bg-slate-950 px-4 py-3 text-white shadow-2xl border border-white/10" style={{ left: Math.min(hoverInfo.x + 16, (viewerRef.current?.clientWidth || 0) - 260), top: Math.max(12, hoverInfo.y - 62) }}><p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">Nivel de amenaza</p><div className="mt-1 flex items-start gap-2"><span className="mt-1 h-4 w-4 shrink-0 rounded-full border border-white/20" style={{ backgroundColor: hoverInfo.color }} /><span className="text-lg font-black leading-snug">{hoverInfo.label}</span></div><p className="text-[10px] font-bold text-slate-400">Valor raster: {hoverInfo.value}</p></div>}
                 {activePoint && <div className="absolute right-4 top-4 z-30 max-w-sm rounded-2xl bg-slate-950 px-4 py-3 text-white shadow-2xl border border-white/10"><p className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-200">Institución educativa</p><h3 className="mt-1 text-lg font-black leading-tight">{activePoint.name}</h3><div className="mt-2 flex items-center gap-2"><span className="h-4 w-4 rounded-full border border-white/20" style={{ backgroundColor: getThreatColor(activePoint.threatValue) }} /><span className="text-sm font-bold text-slate-300">Amenaza: {activePoint.threatLabel || 'Sin dato'}</span></div></div>}
+
+                {hasVisibleMap && pointerPos && (
+                  <svg aria-hidden="true" viewBox="0 0 28 28" className="pointer-events-none absolute z-40 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]" style={{ left: pointerPos.x - 14, top: pointerPos.y - 14, width: 28, height: 28 }}>
+                    <line x1="14" y1="1" x2="14" y2="9" stroke="white" strokeWidth="3" strokeLinecap="round" />
+                    <line x1="14" y1="19" x2="14" y2="27" stroke="white" strokeWidth="3" strokeLinecap="round" />
+                    <line x1="1" y1="14" x2="9" y2="14" stroke="white" strokeWidth="3" strokeLinecap="round" />
+                    <line x1="19" y1="14" x2="27" y2="14" stroke="white" strokeWidth="3" strokeLinecap="round" />
+                    <line x1="14" y1="1" x2="14" y2="9" stroke="#0f172a" strokeWidth="1.25" strokeLinecap="round" />
+                    <line x1="14" y1="19" x2="14" y2="27" stroke="#0f172a" strokeWidth="1.25" strokeLinecap="round" />
+                    <line x1="1" y1="14" x2="9" y2="14" stroke="#0f172a" strokeWidth="1.25" strokeLinecap="round" />
+                    <line x1="19" y1="14" x2="27" y2="14" stroke="#0f172a" strokeWidth="1.25" strokeLinecap="round" />
+                    <circle cx="14" cy="14" r="2.75" fill="none" stroke="white" strokeWidth="2" />
+                    <circle cx="14" cy="14" r="2.75" fill="none" stroke="#0f172a" strokeWidth="0.85" />
+                  </svg>
+                )}
               </div>
             </div>
 

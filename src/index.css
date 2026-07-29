@@ -182,52 +182,26 @@
   -webkit-user-select: none;
   -webkit-user-drag: none;
   transform-origin: 2.857% 7.407%;
-  transition: filter .07s ease;
+  transition: transform .09s ease, filter .09s ease;
   filter: drop-shadow(0 1px 2px rgba(2, 6, 23, .55));
-  animation: hummingbird-flap .22s ease-in-out infinite;
 }
 
-/* Aleteo continuo: las alas laten sobre el mismo punto (el pico), así que la
-   posición real del cursor no se mueve mientras "vuela". Puramente estético. */
-@keyframes hummingbird-flap {
-  0%, 100% { transform: rotate(-5deg) scaleY(.94); }
-  50% { transform: rotate(5deg) scaleY(1.05); }
-}
-
+/* Sin animación en bucle: la sensación de aleteo viene de que la pose cambia
+   (idle/interactive/pressed) cada vez que el mouse cruza un botón, igual que
+   en la versión original. Un loop infinito aquí se ve como un temblor constante. */
 .custom-hummingbird-cursor[data-mode='interactive'] img {
-  animation-duration: .14s;
+  transform: scale(1.08) rotate(-6deg);
   filter:
     drop-shadow(0 1px 2px rgba(2, 6, 23, .55))
     drop-shadow(0 0 4px rgba(34, 211, 238, .35));
 }
 
 .custom-hummingbird-cursor[data-mode='pressed'] img {
-  animation: none;
-  transition: transform .07s ease, filter .07s ease;
-  transform: scale(.90) rotate(2deg);
-}
-
-.custom-crosshair-cursor {
-  position: fixed;
-  left: 0;
-  top: 0;
-  pointer-events: none;
-  z-index: 2147483647;
-  user-select: none;
-  -webkit-user-select: none;
-  opacity: 0;
-  will-change: transform, opacity;
-  transition: opacity .06s linear;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .35));
-}
-
-.custom-crosshair-cursor[data-visible='true'] {
-  opacity: 1;
+  transform: scale(.88) rotate(8deg);
 }
 
 @media (pointer: coarse) {
-  .custom-hummingbird-cursor,
-  .custom-crosshair-cursor {
+  .custom-hummingbird-cursor {
     display: none !important;
   }
 }
