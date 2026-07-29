@@ -3,7 +3,6 @@ import { LockKeyhole, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const SESSION_KEY = 'mision-prevencion-admin-auth';
-const DEFAULT_ADMIN_PIN = '1803';
 const CONFIGURED_ADMIN_PIN = String((import.meta as any).env?.VITE_ADMIN_PIN || '').trim();
 
 const normalizePin = (value: string) => value.replace(/\s+/g, '').trim();
@@ -17,14 +16,15 @@ const AdminGate = ({ children }: { children: ReactNode }) => {
   const submit = (event: FormEvent) => {
     event.preventDefault();
 
-    const enteredPin = normalizePin(pin);
-    const acceptedPins = new Set([
-      DEFAULT_ADMIN_PIN,
-      ...(CONFIGURED_ADMIN_PIN ? [normalizePin(CONFIGURED_ADMIN_PIN)] : [])
-    ]);
+    if (!CONFIGURED_ADMIN_PIN) {
+      setError('El código de acceso no está configurado. Agrega VITE_ADMIN_PIN en Vercel.');
+      return;
+    }
 
-    if (!acceptedPins.has(enteredPin)) {
-      setError('Código incorrecto. Usa 1803.');
+    const enteredPin = normalizePin(pin);
+
+    if (enteredPin !== normalizePin(CONFIGURED_ADMIN_PIN)) {
+      setError('Código incorrecto.');
       return;
     }
 
