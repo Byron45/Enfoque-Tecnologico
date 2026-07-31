@@ -10,6 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import JSZip from 'jszip';
 import shp from 'shpjs';
+import simplify from 'simplify-js';
 import { createClient } from '@supabase/supabase-js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -32,16 +33,27 @@ if (!fs.existsSync(sourceDir)) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const simplifyRing = (ring, maxPoints = 180) => {
-  const valid = ring.filter((point) => Array.isArray(point) && Number.isFinite(point[0]) && Number.isFinite(point[1]));
-  if (valid.length <= maxPoints) return valid;
+// Douglas-Peucker real (vía simplify-js) en vez de "tomar 1 de cada N puntos".
+// La decimación cruda corta las curvas en línea recta y se ve cuadriculada;
+// Douglas-Peucker conserva las esquinas/curvas reales del límite y solo quita
+// los puntos que apenas aportan forma. Aunque el .prj declara UTM (metros),
+// las coordenadas reales que devuelve shpjs están en grados decimales
+// (lon/lat WGS84) - por eso la tolerancia es tan pequeña: ~0.00003° equivale
+// a unos 3 metros en Ecuador (1° de latitud ≈ 111 km).
+const TOLERANCE_METERS = 0.00008;
 
-  const step = Math.ceil(valid.length / maxPoints);
-  const sampled = valid.filter((_, index) => index === 0 || index === valid.length - 1 || index % step === 0);
-  const first = sampled[0];
-  const last = sampled[sampled.length - 1];
-  if (first && last && (first[0] !== last[0] || first[1] !== last[1])) sampled.push(first);
-  return sampled;
+const simplifyRing = (ring) => {
+  const valid = ring.filter((point) => Array.isArray(point) && Number.isFinite(point[0]) && Number.isFinite(point[1]));
+  if (valid.length <= 4) return valid;
+
+  const points = valid.map(([x, y]) => ({ x, y }));
+  const simplified = simplify(points, TOLERANCE_METERS, true);
+  const result = simplified.map((p) => [p.x, p.y]);
+
+  const first = result[0];
+  const last = result[result.length - 1];
+  if (first && last && (first[0] !== last[0] || first[1] !== last[1])) result.push(first);
+  return result;
 };
 
 const optimizeCollection = (collection) => ({
@@ -101,6 +113,13 @@ const main = async () => {
 
   const optimizedCantones = optimizeCollection(cantonesRaw);
   const optimizedParroquias = optimizeCollection(parroquiasRaw);
+
+  const countPoints = (collection) => collection.features.reduce((sum, f) => {
+    const rings = f.geometry.type === 'Polygon' ? f.geometry.coordinates : f.geometry.coordinates.flat();
+    return sum + rings.reduce((s, ring) => s + ring.length, 0);
+  }, 0);
+  console.log(`  Cantones simplificado: ${countPoints(optimizedCantones)} puntos (de ${countPoints(cantonesRaw)} originales)`);
+  console.log(`  Parroquias simplificado: ${countPoints(optimizedParroquias)} puntos (de ${countPoints(parroquiasRaw)} originales)`);
 
   const folder = `territorial/${Date.now()}`;
   const payloads = [

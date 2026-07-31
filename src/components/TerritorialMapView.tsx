@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import simplify from 'simplify-js';
 import type { GeoJsonFeature, GeoJsonFeatureCollection, Position } from '../utils/territorialMaps';
 import { getFeatureName, isBanosFeature } from '../utils/territorialMaps';
 
@@ -12,7 +13,14 @@ type Props = {
 };
 
 const COLORS = ['#34d399', '#38bdf8', '#a78bfa', '#fbbf24', '#fb7185', '#2dd4bf', '#60a5fa', '#a3e635', '#f472b6', '#fb923c'];
-const MAX_POINTS_PER_RING = 520;
+// Los datos publicados ya vienen simplificados con Douglas-Peucker (ver
+// scripts/publish-territorial-maps.mjs); esto es solo una red de seguridad
+// por si algún día se publica una capa sin simplificar. Tolerancia generosa
+// para que casi nunca se active sobre datos ya optimizados.
+const MAX_POINTS_PER_RING = 4000;
+// Mismo caso que en territorialMaps.ts: las coordenadas están en grados, no
+// metros, aunque el .prj original diga UTM.
+const SAFETY_TOLERANCE = 0.00008;
 
 const forEachPosition = (feature: GeoJsonFeature, callback: (position: Position) => void) => {
   if (!feature.geometry) return;
@@ -30,12 +38,14 @@ const simplifyRing = (ring: Position[]) => {
   const valid = ring.filter((point) => Array.isArray(point) && Number.isFinite(point[0]) && Number.isFinite(point[1]));
   if (valid.length <= MAX_POINTS_PER_RING) return valid;
 
-  const step = Math.ceil(valid.length / MAX_POINTS_PER_RING);
-  const sampled = valid.filter((_, index) => index === 0 || index === valid.length - 1 || index % step === 0);
-  const first = sampled[0];
-  const last = sampled[sampled.length - 1];
-  if (first && last && (first[0] !== last[0] || first[1] !== last[1])) sampled.push(first);
-  return sampled;
+  const points = valid.map(([x, y]) => ({ x, y }));
+  const simplified = simplify(points, SAFETY_TOLERANCE, true);
+  const result: Position[] = simplified.map((p) => [p.x, p.y]);
+
+  const first = result[0];
+  const last = result[result.length - 1];
+  if (first && last && (first[0] !== last[0] || first[1] !== last[1])) result.push(first);
+  return result;
 };
 
 const TerritorialMapView = ({ collection, mode, className = '', loading = false, audience = 'admin', onRetry }: Props) => {

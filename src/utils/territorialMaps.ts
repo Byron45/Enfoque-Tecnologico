@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import shp from 'shpjs';
+import simplify from 'simplify-js';
 import { isSupabaseConfigured, supabase } from '../supabaseClient';
 
 export type Position = [number, number];
@@ -52,20 +53,27 @@ const normalize = (value: string) =>
     .toLowerCase();
 
 export const getFeatureName = (feature: GeoJsonFeature, fallback = 'Territorio') => {
-  const entries = Object.entries(feature.properties || {});
-  const preferred = entries.find(([key, value]) => {
-    if (typeof value !== 'string' && typeof value !== 'number') return false;
-    const normalizedKey = normalize(key);
-    return (
-      normalizedKey.includes('nombre') ||
-      normalizedKey.includes('name') ||
-      normalizedKey.includes('dpa_des') ||
-      normalizedKey.includes('canton') ||
-      normalizedKey.includes('parroquia')
-    );
-  });
+  const entries = Object.entries(feature.properties || {}).filter(
+    ([, value]) => typeof value === 'string' || typeof value === 'number'
+  );
 
-  if (preferred) return String(preferred[1]);
+  // Orden de prioridad: "dpa_des*" es el prefijo estándar de los campos de
+  // NOMBRE en los shapefiles del INEC (DPA_DESCAN, DPA_DESPAR, DPA_DESPRO).
+  // Va primero porque "canton"/"parroquia" sueltos también matchean campos
+  // de CÓDIGO como DPA_CANTON (valor "1801"), no el nombre real.
+  const matchers = [
+    (key: string) => key.includes('dpa_des'),
+    (key: string) => key.includes('nombre'),
+    (key: string) => key.includes('name'),
+    (key: string) => key.includes('canton'),
+    (key: string) => key.includes('parroquia')
+  ];
+
+  for (const matches of matchers) {
+    const found = entries.find(([key]) => matches(normalize(key)));
+    if (found) return String(found[1]);
+  }
+
   const firstText = entries.find(([, value]) => typeof value === 'string' && value.trim());
   return firstText ? String(firstText[1]) : fallback;
 };
@@ -212,16 +220,26 @@ export const parseTerritorialFiles = async (files: File[]) => {
   };
 };
 
-const simplifyRing = (ring: Position[], maxPoints = 180): Position[] => {
-  const valid = ring.filter((point) => Array.isArray(point) && Number.isFinite(point[0]) && Number.isFinite(point[1]));
-  if (valid.length <= maxPoints) return valid;
+// Douglas-Peucker real (vía simplify-js) en vez de "tomar 1 de cada N puntos".
+// La decimación cruda corta las curvas en línea recta y se ve cuadriculada;
+// Douglas-Peucker conserva las esquinas/curvas reales del límite. Aunque el
+// .prj de los shapefiles del INEC declara UTM (metros), las coordenadas que
+// entrega shpjs vienen en grados decimales (lon/lat WGS84) - por eso la
+// tolerancia es tan pequeña: ~0.00008° equivale a unos 9 metros en Ecuador.
+const SIMPLIFY_TOLERANCE = 0.00008;
 
-  const step = Math.ceil(valid.length / maxPoints);
-  const sampled = valid.filter((_, index) => index === 0 || index === valid.length - 1 || index % step === 0);
-  const first = sampled[0];
-  const last = sampled[sampled.length - 1];
-  if (first && last && (first[0] !== last[0] || first[1] !== last[1])) sampled.push(first);
-  return sampled;
+const simplifyRing = (ring: Position[]): Position[] => {
+  const valid = ring.filter((point) => Array.isArray(point) && Number.isFinite(point[0]) && Number.isFinite(point[1]));
+  if (valid.length <= 4) return valid;
+
+  const points = valid.map(([x, y]) => ({ x, y }));
+  const simplified = simplify(points, SIMPLIFY_TOLERANCE, true);
+  const result: Position[] = simplified.map((p) => [p.x, p.y]);
+
+  const first = result[0];
+  const last = result[result.length - 1];
+  if (first && last && (first[0] !== last[0] || first[1] !== last[1])) result.push(first);
+  return result;
 };
 
 const optimizeCollectionForPublishing = (collection: GeoJsonFeatureCollection): GeoJsonFeatureCollection => ({

@@ -1,6 +1,9 @@
 node_modules/
 dist/
 dist-ssr/
+# El lockfile generado en Windows rompe "npm install/ci" en la máquina Linux
+# de Vercel (ver commit "Quitar package-lock.json para arreglar el build").
+package-lock.json
 *.local
 .env
 .env.local
