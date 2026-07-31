@@ -221,14 +221,14 @@ const KidLobby = () => {
             <div className="mt-4 overflow-hidden rounded-[1.4rem] border-2 border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
               <div className="mb-3 flex items-center gap-3">
                 <ShieldCheck className="shrink-0 text-emerald-600" />
-                <p className="text-[11px] font-black uppercase tracking-[.18em] text-emerald-700">¿Sabías que...?</p>
+                <p className="text-[11px] font-black uppercase tracking-[.18em] text-black">¿Sabías que...?</p>
               </div>
               <AnimatePresence mode="wait">
                 <motion.p
                   key={sabiasQueIndex}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -14 }}
+                  initial={{ opacity: 0, x: 18 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -18 }}
                   transition={{ duration: 0.45, ease: 'easeOut' }}
                   className="whitespace-pre-line text-sm font-bold leading-relaxed text-emerald-900"
                 >
