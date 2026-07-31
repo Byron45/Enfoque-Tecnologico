@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   CheckCircle2,
@@ -47,6 +47,18 @@ const ESCUELAS = [
   'Unidad Educativa Rio Negro'
 ];
 
+const SABIAS_QUE = [
+  '¡Los desastres NO son naturales! Lo natural es que llueva o tiemble; el desastre ocurre únicamente cuando no estamos preparados para ello.',
+  'La "vulnerabilidad" es como salir a la lluvia sin paraguas. Mientras más conozcamos los peligros de nuestro entorno, menos vulnerables seremos.',
+  '¡Tu Mochila de Emergencia es tu escudo protector! Debe contener todo lo necesario para cuidarte durante 3 días o 72 horas.',
+  'Una urgencia la puede solventar la comunidad o la escuela, pero una emergencia real ¡Necesita que llamemos a los verdaderos héroes del ECU 911!',
+  'Hacer llamadas de broma al 9-1-1 es muy peligroso. Podrías hacer que una ambulancia pierda tiempo y no llegue a salvar una vida real.',
+  '¡Tu familia es tu mejor equipo de rescate! Tener un Plan Familiar de Emergencias les ayuda a saber exactamente qué hacer y dónde encontrarse si algo pasa.',
+  'Nuestro hermoso cantón convive con ríos, montañas y el gran volcán Tungurahua. ¡Conocer las Zonas Seguras y rutas de evacuación es nuestro súper poder!',
+  'Si la tierra empieza a temblar, debes actuar como un ninja. Solo recuerda los tres pasos vitales: ¡Agáchate, cúbrete debajo de una mesa y agárrate fuerte!',
+  'Al escuchar la alarma de evacuación, somos como tortugas sabias y no como liebres asustadas. Caminar rápido pero sin correr evita que nos lastimemos.'
+];
+
 const KidLobby = () => {
   const navigate = useNavigate();
   const [nombre, setNombre] = useState('');
@@ -55,8 +67,17 @@ const KidLobby = () => {
   const [avatar, setAvatar] = useState<'chica' | 'chico' | ''>('');
   const [showSchools, setShowSchools] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sabiasQueIndex, setSabiasQueIndex] = useState(0);
 
   const listo = useMemo(() => Boolean(nombre.trim() && escuela && avatar), [nombre, escuela, avatar]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setSabiasQueIndex((current) => (current + 1) % SABIAS_QUE.length);
+    }, 5000);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -126,17 +147,17 @@ const KidLobby = () => {
               <span className="mt-2 block bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 bg-clip-text text-transparent [-webkit-text-stroke:1.5px_#f97316]">PREVENCIÓN</span>
             </h1>
 
-            <p className="max-w-xl text-base font-bold leading-relaxed text-cyan-50 md:text-lg">
+            <p className="max-w-xl text-xl font-bold leading-relaxed text-cyan-50 md:text-3xl">
               Plataforma de educación en Gestión de Riesgos de Desastres para el distrito 18D03.
             </p>
 
-            <div className="mx-auto flex w-full max-w-[420px] items-center justify-center py-1">
-              <div className="mission-logo-frame relative flex h-56 w-56 items-center justify-center overflow-hidden rounded-full border-[10px] shadow-[0_22px_65px_rgba(1,21,70,.35)] md:h-64 md:w-64">
+            <div className="mx-auto flex w-full max-w-[500px] items-center justify-center py-1">
+              <div className="mission-logo-frame relative flex h-72 w-72 items-center justify-center overflow-hidden rounded-full border-[10px] shadow-[0_22px_65px_rgba(1,21,70,.35)] md:h-80 md:w-80 lg:h-96 lg:w-96">
                 <img src={LOGO_URL} alt="Logo Misión Prevención 18D03" className="mission-logo-image relative" />
               </div>
             </div>
 
-            <p className="max-w-xl text-lg font-black leading-snug text-yellow-300 md:text-xl">
+            <p className="max-w-xl text-xl font-black leading-snug text-yellow-300 md:text-3xl">
               Conoce el riesgo, actúa con seguridad y protege tu comunidad.
             </p>
           </div>
@@ -197,9 +218,23 @@ const KidLobby = () => {
               </button>
             </form>
 
-            <div className="mt-4 flex items-start gap-3 rounded-[1.4rem] border-2 border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
-              <ShieldCheck className="shrink-0 text-emerald-600" />
-              <p className="text-sm font-bold leading-relaxed">Cada reto te enseñará a mantener la calma, ayudar a otros y actuar de forma segura.</p>
+            <div className="mt-4 overflow-hidden rounded-[1.4rem] border-2 border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
+              <div className="mb-3 flex items-center gap-3">
+                <ShieldCheck className="shrink-0 text-emerald-600" />
+                <p className="text-[11px] font-black uppercase tracking-[.18em] text-emerald-700">¿Sabías que...?</p>
+              </div>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={sabiasQueIndex}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -14 }}
+                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                  className="whitespace-pre-line text-sm font-bold leading-relaxed text-emerald-900"
+                >
+                  {SABIAS_QUE[sabiasQueIndex]}
+                </motion.p>
+              </AnimatePresence>
             </div>
           </div>
         </section>

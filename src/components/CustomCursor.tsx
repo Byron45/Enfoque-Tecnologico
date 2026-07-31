@@ -21,13 +21,21 @@ const CROSSHAIR_SELECTOR = '[data-cursor="crosshair"]';
 
 type Pose = 'idle' | 'interactive' | 'pressed';
 
-const DISPLAY_WIDTH = 74;
+const DISPLAY_WIDTH = 45;
 
 const POSES: Record<Pose, { src: string; width: number; height: number; hotspotXRatio: number; hotspotYRatio: number }> = {
   idle: { src: idleUrl, width: 961, height: 688, hotspotXRatio: 0.0062, hotspotYRatio: 0.0603 },
   interactive: { src: hoverUrl, width: 1028, height: 760, hotspotXRatio: 0.0058, hotspotYRatio: 0.1836 },
   pressed: { src: pressedUrl, width: 1056, height: 615, hotspotXRatio: 0.0057, hotspotYRatio: 0.6260 }
 };
+
+const preloadCursorImage = (src: string) => {
+  const image = new Image();
+  image.src = src;
+  return image;
+};
+
+[idleUrl, hoverUrl, pressedUrl].forEach(preloadCursorImage);
 
 const poseMetrics = (pose: Pose) => {
   const config = POSES[pose];
@@ -47,13 +55,6 @@ const CustomCursor = () => {
   const lastPointRef = useRef({ x: -200, y: -200 });
   const poseRef = useRef<Pose>('idle');
   const hotspotRef = useRef(poseMetrics('idle'));
-
-  useEffect(() => {
-    (['idle', 'interactive', 'pressed'] as Pose[]).forEach((pose) => {
-      const image = new Image();
-      image.src = POSES[pose].src;
-    });
-  }, []);
 
   useEffect(() => {
     const finePointer = window.matchMedia('(pointer: fine)');
@@ -105,6 +106,15 @@ const CustomCursor = () => {
       renderAt(event.clientX, event.clientY);
     };
 
+    const over = (event: PointerEvent) => {
+      setMode(event.target);
+    };
+
+    const out = (event: PointerEvent) => {
+      const element = event.relatedTarget instanceof Element ? event.relatedTarget : null;
+      setMode(element);
+    };
+
     const down = (event: PointerEvent) => {
       setMode(event.target, true);
       renderAt(event.clientX, event.clientY);
@@ -122,6 +132,8 @@ const CustomCursor = () => {
     };
 
     window.addEventListener('pointermove', move, { passive: true });
+    window.addEventListener('pointerover', over, { passive: true });
+    window.addEventListener('pointerout', out, { passive: true });
     window.addEventListener('pointerdown', down, { passive: true });
     window.addEventListener('pointerup', up, { passive: true });
     window.addEventListener('blur', hide);
@@ -131,6 +143,8 @@ const CustomCursor = () => {
     return () => {
       document.documentElement.classList.remove('custom-cursor-enabled');
       window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerover', over);
+      window.removeEventListener('pointerout', out);
       window.removeEventListener('pointerdown', down);
       window.removeEventListener('pointerup', up);
       window.removeEventListener('blur', hide);
