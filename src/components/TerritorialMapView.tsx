@@ -160,8 +160,8 @@ const TerritorialMapView = ({ collection, mode, className = '', loading = false,
               key={`${name}-${index}`}
               d={path}
               fill={fill}
-              stroke={banos ? '#9f1239' : '#334155'}
-              strokeWidth={banos ? 3.5 : 1.4}
+              stroke="#334155"
+              strokeWidth={1.4}
               vectorEffect="non-scaling-stroke"
               fillRule="evenodd"
               className="cursor-interactive transition-all duration-150 hover:opacity-75"
