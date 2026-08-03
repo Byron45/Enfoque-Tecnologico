@@ -15,8 +15,10 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import GuideAssistant from './GuideAssistant';
 import MissionVisualPanel from './MissionVisualPanel';
 import Quiz from './Quiz';
+import { GUIDE_STEPS } from '../utils/guideSteps';
 
 const MISSION_IMAGE_URL = '';
 
@@ -201,6 +203,8 @@ const MisionEvacuacion = () => {
       </section>
 
       {showQuiz && <Quiz tipo="evacuacion" onClose={() => setShowQuiz(false)} onWin={handleWinQuiz} />}
+
+      <GuideAssistant guideId="mision-evacuacion" steps={GUIDE_STEPS['mision-evacuacion']} />
     </main>
   );
 };

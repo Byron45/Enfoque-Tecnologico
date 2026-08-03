@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import brandLogoUrl from '../assets/logo-agentes-prevencion.png';
+import GuideAssistant from './GuideAssistant';
+import { GUIDE_STEPS } from '../utils/guideSteps';
 
 const LOGO_URL = brandLogoUrl;
 
@@ -205,6 +207,8 @@ const KidHub = () => {
           </div>
         </section>
       </section>
+
+      <GuideAssistant guideId="hub" steps={GUIDE_STEPS.hub} />
     </main>
   );
 };

@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, BookOpenCheck, Clock, ExternalLink, PlayCircle, ShieldCheck, Video } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import GuideAssistant from './GuideAssistant';
+import { GUIDE_STEPS } from '../utils/guideSteps';
 
 const VIDEO_ID = 'opNwG7zrIVQ';
 const VIDEO_TITLE = 'Cápsula de prevención';
@@ -109,6 +111,8 @@ const VideosPage = () => {
           </div>
         </section>
       </section>
+
+      <GuideAssistant guideId="videos" steps={GUIDE_STEPS.videos} />
     </main>
   );
 };

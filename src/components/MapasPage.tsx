@@ -15,6 +15,8 @@ import {
   susceptibilityPalettes
 } from '../utils/geotiffRenderer';
 import { getLocalHazardMap, getLocalHazardMapIds } from '../utils/localMapStore';
+import GuideAssistant from './GuideAssistant';
+import { GUIDE_STEPS } from '../utils/guideSteps';
 
 const paletteLabels: Record<PaletteName, string> = {
   institucional: 'Original',
@@ -490,6 +492,8 @@ const MapasPage = () => {
           </div>
         </section>
       </section>
+
+      <GuideAssistant guideId="mapas" steps={GUIDE_STEPS.mapas} />
     </main>
   );
 };

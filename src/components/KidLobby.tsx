@@ -16,7 +16,9 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import brandLogoUrl from '../assets/logo-agentes-prevencion.png';
+import GuideAssistant from './GuideAssistant';
 import { supabase } from '../supabaseClient';
+import { GUIDE_STEPS } from '../utils/guideSteps';
 
 const LOGO_URL = brandLogoUrl;
 
@@ -262,6 +264,8 @@ const KidLobby = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <GuideAssistant guideId="lobby" steps={GUIDE_STEPS.lobby} />
     </main>
   );
 };
