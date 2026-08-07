@@ -16,7 +16,8 @@ const MAP_RESOURCES = [
   { id: 'deslizamientos', shortTitle: 'Deslizamientos', fileKeywords: ['deslizamientos', 'deslizamiento'] },
   { id: 'heladas', shortTitle: 'Heladas', fileKeywords: ['heladas1', 'heladas', 'helada'] },
   { id: 'incendios_forestales', shortTitle: 'Incendios forestales', fileKeywords: ['incendios_forestales1', 'incendios_forestales', 'incendios', 'forestales'] },
-  { id: 'sequia_hidrologica', shortTitle: 'Sequía hidrológica', fileKeywords: ['sequia_hidrologica1', 'sequia_hidrologica', 'sequia', 'hidrologica'] }
+  { id: 'sequia_hidrologica', shortTitle: 'Sequía hidrológica', fileKeywords: ['sequia_hidrologica1', 'sequia_hidrologica', 'sequia', 'hidrologica'] },
+  { id: 'sismico', shortTitle: 'Amenaza sísmica', fileKeywords: ['peligro_sismico', 'amenaza_sismica', 'sismico', 'sismo', 'aceleracion_sismica', 'banos'] }
 ];
 
 const normalizeFileName = (value) =>

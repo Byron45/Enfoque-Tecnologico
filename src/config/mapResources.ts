@@ -4,7 +4,8 @@ export type MapResourceId =
   | 'deslizamientos'
   | 'heladas'
   | 'incendios_forestales'
-  | 'sequia_hidrologica';
+  | 'sequia_hidrologica'
+  | 'sismico';
 
 export type MapResource = {
   id: MapResourceId;
@@ -86,6 +87,22 @@ export const MAP_RESOURCES: MapResource[] = [
     storagePrefix: 'sequia-hidrologica',
     fileKeywords: ['sequia_hidrologica1', 'sequia_hidrologica', 'sequia', 'hidrologica'],
     accent: 'from-yellow-500 to-orange-600'
+  },
+  {
+    id: 'sismico',
+    title: 'Mapa de amenaza sísmica',
+    shortTitle: 'Amenaza sísmica',
+    subtitle: '',
+    description: 'Mapa temático de amenaza sísmica. Muestra niveles de aceleración sísmica (PGA) para identificar las zonas con mayor exposición ante un sismo.',
+    storagePrefix: 'sismico',
+    fileKeywords: ['peligro_sismico', 'amenaza_sismica', 'sismico', 'sismo', 'aceleracion_sismica', 'banos'],
+    accent: 'from-lime-600 via-yellow-500 to-orange-600',
+    legendLabels: {
+      1: '0.40 - 0.45 PGA',
+      2: '0.45 - 0.50 PGA',
+      3: '0.50 - 0.55 PGA',
+      4: '0.55 - 0.60 PGA'
+    }
   }
 ];
 
