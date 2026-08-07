@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import KidLobby from './components/KidLobby';
 import HubWithWelcome from './components/HubWithWelcome';
+import MisionDiagnostico from './components/MisionDiagnostico';
 import MisionVolcan from './components/MisionVolcan';
 import MisionInundacion from './components/MisionInundacion';
 import MisionSismo from './components/MisionSismo';
@@ -23,6 +24,7 @@ function App() {
           <Route path="/" element={<KidLobby />} />
           <Route path="/hub" element={<HubWithWelcome />} />
 
+          <Route path="/diagnostico" element={<MisionDiagnostico />} />
           <Route path="/volcan" element={<MisionVolcan />} />
           <Route path="/inundacion" element={<MisionInundacion />} />
           <Route path="/sismo" element={<MisionSismo />} />

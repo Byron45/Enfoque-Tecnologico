@@ -35,7 +35,7 @@ export const GUIDE_STEPS: Record<string, GuideStep[]> = {
     },
     {
       title: 'Elige tu misión',
-      text: 'Tienes cuatro misiones: Alerta Volcánica, Inundaciones, Sismos y Evacuación. Se desbloquean una por una, en orden.'
+      text: 'Tienes cinco misiones: Diagnóstico, Alerta Volcánica, Inundaciones, Sismos y Evacuación. Se desbloquean una por una, en orden.'
     },
     {
       title: 'Caja de herramientas',
@@ -62,6 +62,20 @@ export const GUIDE_STEPS: Record<string, GuideStep[]> = {
     {
       title: 'Descubre el riesgo',
       text: 'Pasa el dedo o el mouse sobre el mapa para ver el nivel de amenaza de cada zona.'
+    }
+  ],
+  'mision-diagnostico': [
+    {
+      title: 'Diagnóstico inicial',
+      text: 'Antes de comenzar tus misiones, queremos saber qué tanto sabes sobre desastres naturales.'
+    },
+    {
+      title: 'Sin apuros',
+      text: 'No necesitas prepararte, solo responde con lo que ya sabes. Si te equivocas, puedes intentarlo de nuevo.'
+    },
+    {
+      title: 'Responde la evaluación',
+      text: 'Toca "Iniciar evaluación" y responde las 5 preguntas para desbloquear tu primera misión.'
     }
   ],
   'mision-volcan': [

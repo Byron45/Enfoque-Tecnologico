@@ -13,9 +13,8 @@ type MissionVisualPanelProps = {
 };
 
 const DEFAULT_MISSION_IMAGES: Record<string, string> = {
-  'Misión 01': 'https://blogger.googleusercontent.com/img/a/AVvXsEgxt0nz_5zb6sJcMmAFl4NO7SbGfnRVfz382Y1KIBnadgimoaB-fMmtzbSlVCNcUe8lKT5OizQSN8qj3tLkMpffcoRp-NGfnqkbvPbXi_i4XXeo_oNAoSCxfnA6vc_4LDSlMFqVmf0bx-9oFC_zCHcOZpkUgqGpYU510LVG009EcVty3Mc9qK5agK_P8P0',
-  'Misión 02': 'https://blogger.googleusercontent.com/img/a/AVvXsEj30af-Q4RWDQcuKy1ZdmamG3XprMhQw-Yj5nFzod_cdDnNFCRlud3UjNhu0Nd4KTvxQ-EB2dhJ3YQUY--NgcAnrBpuc0HGSnqd8Yuq1OvfjLg-pRlqx0RDBbz29ZhMgPeoI8zZsEYr0SPgqiaVcQacItbmnv07ZDJ4Mncgoh6myxWCz7bYomnO8URAjJg',
-  'Misión 04': 'https://blogger.googleusercontent.com/img/a/AVvXsEieVDFfz8rePd1-thfyVOMQLuKbF2LiF2jZeKAsCz-TD3fbHMx2EpKbScRB9_9IyjZ667m7D_PTnWM3SeMRDYU5V1NKKL0mgfFzciPl0Cd9agL4FqF_3GOj8KFPPCmLoKgAdDB_vcrtoVJzISH3E_nTPUB21Zw6hEiU2E4hNnbeCHNICNNWeBc_yizLgXA'
+  'Misión 03': 'https://blogger.googleusercontent.com/img/a/AVvXsEj30af-Q4RWDQcuKy1ZdmamG3XprMhQw-Yj5nFzod_cdDnNFCRlud3UjNhu0Nd4KTvxQ-EB2dhJ3YQUY--NgcAnrBpuc0HGSnqd8Yuq1OvfjLg-pRlqx0RDBbz29ZhMgPeoI8zZsEYr0SPgqiaVcQacItbmnv07ZDJ4Mncgoh6myxWCz7bYomnO8URAjJg',
+  'Misión 05': 'https://blogger.googleusercontent.com/img/a/AVvXsEieVDFfz8rePd1-thfyVOMQLuKbF2LiF2jZeKAsCz-TD3fbHMx2EpKbScRB9_9IyjZ667m7D_PTnWM3SeMRDYU5V1NKKL0mgfFzciPl0Cd9agL4FqF_3GOj8KFPPCmLoKgAdDB_vcrtoVJzISH3E_nTPUB21Zw6hEiU2E4hNnbeCHNICNNWeBc_yizLgXA'
 };
 
 const MissionVisualPanel = ({

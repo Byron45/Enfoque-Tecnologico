@@ -41,7 +41,7 @@ const MisionInundacion = () => {
       return;
     }
 
-    localStorage.setItem('agenteNivel', '3');
+    localStorage.setItem('agenteNivel', '4');
     localStorage.setItem('misionInundacionCompletada', 'true');
     window.dispatchEvent(new Event('agenteNivelActualizado'));
 
@@ -51,7 +51,7 @@ const MisionInundacion = () => {
         .from('agentes')
         .update({
           mision_inundacion: true,
-          nivel: 3,
+          nivel: 4,
           ultima_conexion: new Date().toISOString()
         });
 
@@ -139,7 +139,7 @@ const MisionInundacion = () => {
           <section className="bg-white/5 border border-white/10 backdrop-blur-2xl rounded-[2rem] overflow-hidden min-h-0 grid grid-rows-[1fr_auto]">
             <MissionVisualPanel
               imageUrl={MISSION_IMAGE_URL}
-              missionLabel="Misión 02"
+              missionLabel="Misión 03"
               title="Zonas altas y rutas seguras"
               description="Identifica lugares elevados, evita corrientes de agua y actúa con calma durante una inundación."
               accentTextClass="text-cyan-300"
@@ -170,7 +170,7 @@ const MisionInundacion = () => {
                 <span className="text-[9px] font-black uppercase tracking-[0.28em]">Objetivo</span>
               </div>
               <p className="text-sm text-white/75 font-semibold leading-relaxed">
-                Observa el escenario, domina las reglas de seguridad y completa la evaluación para subir al Nivel 3.
+                Observa el escenario, domina las reglas de seguridad y completa la evaluación para subir al Nivel 4.
               </p>
             </div>
 
@@ -198,7 +198,7 @@ const MisionInundacion = () => {
                 isCompleted ? 'bg-emerald-500 text-white' : 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-[0_15px_35px_rgba(34,211,238,0.28)]'
               } disabled:opacity-70`}
             >
-              {loading ? 'Actualizando nivel...' : isCompleted ? <><CheckCircle2 size={18} />Nivel 3 desbloqueado</> : <><PlayCircle size={18} />Iniciar evaluación</>}
+              {loading ? 'Actualizando nivel...' : isCompleted ? <><CheckCircle2 size={18} />Nivel 4 desbloqueado</> : <><PlayCircle size={18} />Iniciar evaluación</>}
             </motion.button>
           </aside>
         </div>

@@ -41,7 +41,7 @@ const MisionVolcan = () => {
       return;
     }
 
-    localStorage.setItem('agenteNivel', '2');
+    localStorage.setItem('agenteNivel', '3');
     localStorage.setItem('misionVolcanCompletada', 'true');
     window.dispatchEvent(new Event('agenteNivelActualizado'));
 
@@ -51,7 +51,7 @@ const MisionVolcan = () => {
         .from('agentes')
         .update({
           mision_volcan: true,
-          nivel: 2,
+          nivel: 3,
           ultima_conexion: new Date().toISOString()
         });
 
@@ -133,7 +133,7 @@ const MisionVolcan = () => {
           <section className="bg-white/5 border border-white/10 backdrop-blur-2xl rounded-[2rem] overflow-hidden min-h-0 grid grid-rows-[1fr_auto]">
             <MissionVisualPanel
               imageUrl={MISSION_IMAGE_URL}
-              missionLabel="Misión 01"
+              missionLabel="Misión 02"
               title="Actividad volcánica"
               description="Reconoce señales de alerta, protege tus vías respiratorias y ubica zonas seguras ante caída de ceniza."
               accentTextClass="text-orange-300"
@@ -164,7 +164,7 @@ const MisionVolcan = () => {
                 <span className="text-[9px] font-black uppercase tracking-[0.28em]">Objetivo</span>
               </div>
               <p className="text-sm text-white/75 font-semibold leading-relaxed">
-                Observa el escenario, recuerda los consejos tácticos y completa la evaluación para subir al Nivel 2.
+                Observa el escenario, recuerda los consejos tácticos y completa la evaluación para subir al Nivel 3.
               </p>
             </div>
 

@@ -23,6 +23,7 @@ import { GUIDE_STEPS } from '../utils/guideSteps';
 type AgenteMatch = {
   id: string;
   nivel: number | null;
+  mision_diagnostico: boolean | null;
   mision_volcan: boolean | null;
   mision_inundacion: boolean | null;
   mision_sismo: boolean | null;
@@ -98,6 +99,7 @@ const KidLobby = () => {
     localStorage.setItem('agenteEdad', String(edad));
     localStorage.setItem('agenteAvatar', avatar);
     localStorage.setItem('agenteNivel', String(record?.nivel || 1));
+    localStorage.setItem('misionDiagnosticoCompletada', String(Boolean(record?.mision_diagnostico)));
     localStorage.setItem('misionVolcanCompletada', String(Boolean(record?.mision_volcan)));
     localStorage.setItem('misionInundacionCompletada', String(Boolean(record?.mision_inundacion)));
     localStorage.setItem('misionSismoCompletada', String(Boolean(record?.mision_sismo)));
@@ -123,6 +125,7 @@ const KidLobby = () => {
           edad,
           avatar,
           nivel: 1,
+          mision_diagnostico: false,
           mision_volcan: false,
           mision_inundacion: false,
           mision_sismo: false,
@@ -180,7 +183,7 @@ const KidLobby = () => {
       try {
         const { data, error } = await supabase
           .from('agentes')
-          .select('id, nivel, mision_volcan, mision_inundacion, mision_sismo, mision_evacuacion')
+          .select('id, nivel, mision_diagnostico, mision_volcan, mision_inundacion, mision_sismo, mision_evacuacion')
           .ilike('nombre', cleanName)
           .ilike('institucion', escuela)
           .eq('edad', edad)

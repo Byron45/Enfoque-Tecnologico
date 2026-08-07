@@ -41,7 +41,7 @@ const MisionEvacuacion = () => {
       return;
     }
 
-    localStorage.setItem('agenteNivel', '5');
+    localStorage.setItem('agenteNivel', '6');
     localStorage.setItem('misionEvacuacionCompletada', 'true');
     window.dispatchEvent(new Event('agenteNivelActualizado'));
 
@@ -51,7 +51,7 @@ const MisionEvacuacion = () => {
         .from('agentes')
         .update({
           mision_evacuacion: true,
-          nivel: 5,
+          nivel: 6,
           ultima_conexion: new Date().toISOString()
         });
 
@@ -139,7 +139,7 @@ const MisionEvacuacion = () => {
           <section className="bg-white/5 border border-white/10 backdrop-blur-2xl rounded-[2rem] overflow-hidden min-h-0 grid grid-rows-[1fr_auto]">
             <MissionVisualPanel
               imageUrl={MISSION_IMAGE_URL}
-              missionLabel="Misión 04"
+              missionLabel="Misión 05"
               title="Punto seguro"
               description="Sigue la señalética, mantén la calma y avanza hacia el punto de encuentro más cercano."
               accentTextClass="text-emerald-300"

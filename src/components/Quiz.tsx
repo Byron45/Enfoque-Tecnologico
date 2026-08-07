@@ -21,7 +21,7 @@ interface Question {
 }
 
 interface QuizProps {
-  tipo: 'volcan' | 'inundacion' | 'sismo' | 'evacuacion';
+  tipo: 'diagnostico' | 'volcan' | 'inundacion' | 'sismo' | 'evacuacion';
   onWin: () => void;
   onClose: () => void;
 }
@@ -34,6 +34,13 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
   const [isSyncing, setIsSyncing] = useState(false);
 
   const preguntas: Record<string, Question[]> = {
+    diagnostico: [
+      { pregunta: '¿Qué es un desastre natural?', opciones: ['Un fenómeno que la naturaleza controla siempre', 'Un fenómeno natural que afecta a las personas cuando no están preparadas', 'Algo que solo pasa en las películas'], correcta: 1 },
+      { pregunta: '¿Cuál de estos fenómenos está relacionado con un volcán?', opciones: ['Ceniza volcánica', 'Marea alta', 'Viento fuerte'], correcta: 0 },
+      { pregunta: '¿Qué debes tener siempre lista para una emergencia?', opciones: ['Una mochila de emergencia', 'Muchos juguetes', 'Nada, no hace falta'], correcta: 0 },
+      { pregunta: '¿A quién debes llamar en una emergencia real?', opciones: ['A tus amigos', 'Al ECU 911', 'A nadie'], correcta: 1 },
+      { pregunta: '¿Por qué es importante conocer las zonas seguras de tu comunidad?', opciones: ['Para saber a dónde ir si hay una emergencia', 'Para presumir que las conoces', 'No es importante'], correcta: 0 }
+    ],
     volcan: [
       {
         pregunta: '¿Qué debes usar para proteger tus pulmones de la ceniza?',
@@ -74,8 +81,9 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
   const handleLevelUp = async () => {
     setIsSyncing(true);
 
-    const niveles = { volcan: 2, inundacion: 3, sismo: 4, evacuacion: 5 };
+    const niveles = { diagnostico: 2, volcan: 3, inundacion: 4, sismo: 5, evacuacion: 6 };
     const camposMision = {
+      diagnostico: 'mision_diagnostico',
       volcan: 'mision_volcan',
       inundacion: 'mision_inundacion',
       sismo: 'mision_sismo',

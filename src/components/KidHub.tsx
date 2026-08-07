@@ -5,6 +5,7 @@ import {
   Award,
   BookOpen,
   ChevronRight,
+  ClipboardCheck,
   Compass,
   LogOut,
   Map,
@@ -33,10 +34,19 @@ const AVATARS = {
 
 const missions = [
   {
+    title: 'Diagnóstico',
+    description: 'Cuéntanos qué sabes sobre desastres naturales antes de comenzar.',
+    path: '/diagnostico',
+    level: 1,
+    icon: ClipboardCheck,
+    gradient: 'from-indigo-500 via-violet-600 to-slate-700',
+    sticker: '📋'
+  },
+  {
     title: 'Alerta Volcánica',
     description: 'Aprende a protegerte de la ceniza y actuar con calma.',
     path: '/volcan',
-    level: 1,
+    level: 2,
     icon: Mountain,
     gradient: 'from-orange-500 via-red-500 to-pink-500',
     sticker: '🌋'
@@ -45,7 +55,7 @@ const missions = [
     title: 'Inundaciones',
     description: 'Descubre rutas altas, lugares seguros y señales de alerta.',
     path: '/inundacion',
-    level: 2,
+    level: 3,
     icon: Waves,
     gradient: 'from-sky-500 via-cyan-500 to-blue-600',
     sticker: '🌊'
@@ -54,7 +64,7 @@ const missions = [
     title: 'Sismos',
     description: 'Aprende a protegerte durante un movimiento telúrico y qué hacer después.',
     path: '/sismo',
-    level: 3,
+    level: 4,
     icon: Activity,
     gradient: 'from-amber-500 via-orange-600 to-stone-700',
     sticker: '📳'
@@ -63,7 +73,7 @@ const missions = [
     title: 'Evacuación',
     description: 'Practica cómo salir con orden y llegar al punto seguro.',
     path: '/evacuacion',
-    level: 4,
+    level: 5,
     icon: Compass,
     gradient: 'from-emerald-500 via-green-500 to-lime-500',
     sticker: '🧭'
@@ -92,7 +102,7 @@ const KidHub = () => {
       setSchool(localStorage.getItem('agenteEscuela') || 'Tu escuela');
       setAvatar(localStorage.getItem('agenteAvatar') === 'chica' ? 'chica' : 'chico');
       const storedLevel = Number(localStorage.getItem('agenteNivel') || '1');
-      setLevel(Number.isFinite(storedLevel) ? Math.min(Math.max(storedLevel, 1), 5) : 1);
+      setLevel(Number.isFinite(storedLevel) ? Math.min(Math.max(storedLevel, 1), 6) : 1);
     };
 
     sync();
@@ -104,7 +114,7 @@ const KidHub = () => {
     };
   }, []);
 
-  const progress = useMemo(() => Math.round(((level - 1) / 4) * 100), [level]);
+  const progress = useMemo(() => Math.round(((level - 1) / 5) * 100), [level]);
 
   const logout = () => {
     localStorage.clear();
@@ -146,7 +156,7 @@ const KidHub = () => {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[.2em] text-violet-600">Tu camino de héroe</p>
-                <h2 className="mt-1 text-3xl font-black text-[#071D4A] md:text-4xl">Nivel {level} de 5</h2>
+                <h2 className="mt-1 text-3xl font-black text-[#071D4A] md:text-4xl">Nivel {level} de 6</h2>
               </div>
               <div className="rounded-2xl bg-yellow-300 p-4 text-yellow-900 shadow-lg"><Star size={34} fill="currentColor" /></div>
             </div>
@@ -177,7 +187,7 @@ const KidHub = () => {
             <Award className="hidden text-yellow-300 md:block" size={48} />
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-5">
             {missions.map((mission) => {
               const unlocked = level >= mission.level;
               const Icon = mission.icon;
@@ -206,14 +216,14 @@ const KidHub = () => {
           </div>
         </section>
 
-        {level >= 5 && (
+        {level >= 6 && (
           <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="overflow-hidden rounded-[2.2rem] border-4 border-white bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 p-6 shadow-[0_22px_65px_rgba(0,0,0,.22)] md:p-8">
             <div className="flex flex-col items-center gap-5 text-center md:flex-row md:justify-between md:text-left">
               <div className="flex items-center gap-4">
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/40 text-[#071D4A] shadow-lg"><Award size={34} /></div>
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[.2em] text-[#071D4A]/70">¡Misión cumplida!</p>
-                  <h2 className="text-2xl font-black text-[#071D4A] md:text-3xl">Completaste las 4 misiones. ¡Reclama tu certificado!</h2>
+                  <h2 className="text-2xl font-black text-[#071D4A] md:text-3xl">Completaste las 5 misiones. ¡Reclama tu certificado!</h2>
                 </div>
               </div>
               <button onClick={() => setShowCertificate(true)} className="flex shrink-0 items-center gap-2 rounded-2xl bg-[#071D4A] px-6 py-4 text-sm font-black uppercase tracking-wider text-white shadow-lg transition hover:-translate-y-1 hover:bg-[#0B4BB3]">
