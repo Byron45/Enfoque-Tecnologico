@@ -17,8 +17,17 @@ import {
 import { useNavigate } from 'react-router-dom';
 import brandLogoUrl from '../assets/logo-agentes-prevencion.png';
 import GuideAssistant from './GuideAssistant';
-import { supabase } from '../supabaseClient';
+import { supabase, isSupabaseConfigured } from '../supabaseClient';
 import { GUIDE_STEPS } from '../utils/guideSteps';
+
+type AgenteMatch = {
+  id: string;
+  nivel: number | null;
+  mision_volcan: boolean | null;
+  mision_inundacion: boolean | null;
+  mision_sismo: boolean | null;
+  mision_evacuacion: boolean | null;
+};
 
 const LOGO_URL = brandLogoUrl;
 
@@ -70,6 +79,8 @@ const KidLobby = () => {
   const [showSchools, setShowSchools] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sabiasQueIndex, setSabiasQueIndex] = useState(0);
+  const [duplicateMatch, setDuplicateMatch] = useState<AgenteMatch | null>(null);
+  const [resolvingDuplicate, setResolvingDuplicate] = useState(false);
 
   const listo = useMemo(() => Boolean(nombre.trim() && escuela && avatar), [nombre, escuela, avatar]);
 
@@ -81,6 +92,83 @@ const KidLobby = () => {
     return () => window.clearInterval(timer);
   }, []);
 
+  const applyLocalProgress = (cleanName: string, record?: AgenteMatch | null) => {
+    localStorage.setItem('agenteNombre', cleanName);
+    localStorage.setItem('agenteEscuela', escuela);
+    localStorage.setItem('agenteEdad', String(edad));
+    localStorage.setItem('agenteAvatar', avatar);
+    localStorage.setItem('agenteNivel', String(record?.nivel || 1));
+    localStorage.setItem('misionVolcanCompletada', String(Boolean(record?.mision_volcan)));
+    localStorage.setItem('misionInundacionCompletada', String(Boolean(record?.mision_inundacion)));
+    localStorage.setItem('misionSismoCompletada', String(Boolean(record?.mision_sismo)));
+    localStorage.setItem('misionEvacuacionCompletada', String(Boolean(record?.mision_evacuacion)));
+    sessionStorage.removeItem('introTerritorialVista');
+  };
+
+  const irAlHub = () => {
+    window.dispatchEvent(new Event('agenteNivelActualizado'));
+    window.setTimeout(() => navigate('/hub'), 350);
+  };
+
+  const crearAgenteNuevo = async (cleanName: string) => {
+    applyLocalProgress(cleanName, null);
+    localStorage.removeItem('agenteRegistroId');
+
+    try {
+      const { data, error } = await supabase
+        .from('agentes')
+        .insert([{
+          nombre: cleanName,
+          institucion: escuela,
+          edad,
+          avatar,
+          nivel: 1,
+          mision_volcan: false,
+          mision_inundacion: false,
+          mision_sismo: false,
+          mision_evacuacion: false,
+          ultima_conexion: new Date().toISOString()
+        }])
+        .select('id')
+        .single();
+
+      if (error) throw error;
+      if (data?.id) localStorage.setItem('agenteRegistroId', data.id);
+    } catch (error) {
+      console.warn('Registro guardado localmente; Supabase no respondió:', error);
+    }
+
+    irAlHub();
+  };
+
+  const continuarConProgreso = async () => {
+    if (!duplicateMatch || resolvingDuplicate) return;
+    setResolvingDuplicate(true);
+    const cleanName = nombre.trim();
+    applyLocalProgress(cleanName, duplicateMatch);
+    localStorage.setItem('agenteRegistroId', duplicateMatch.id);
+
+    try {
+      const { error } = await supabase
+        .from('agentes')
+        .update({ avatar, ultima_conexion: new Date().toISOString() })
+        .eq('id', duplicateMatch.id);
+      if (error) console.warn('No se pudo actualizar el registro existente:', error.message);
+    } catch (error) {
+      console.warn('No se pudo actualizar el registro existente:', error);
+    }
+
+    irAlHub();
+  };
+
+  const crearNuevoDesdeAviso = () => {
+    if (resolvingDuplicate) return;
+    setResolvingDuplicate(true);
+    const cleanName = nombre.trim();
+    setDuplicateMatch(null);
+    crearAgenteNuevo(cleanName);
+  };
+
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!listo || loading) return;
@@ -88,37 +176,29 @@ const KidLobby = () => {
     setLoading(true);
     const cleanName = nombre.trim();
 
-    localStorage.setItem('agenteNombre', cleanName);
-    localStorage.setItem('agenteEscuela', escuela);
-    localStorage.setItem('agenteEdad', String(edad));
-    localStorage.setItem('agenteAvatar', avatar);
-    localStorage.setItem('agenteNivel', '1');
-    localStorage.setItem('misionVolcanCompletada', 'false');
-    localStorage.setItem('misionInundacionCompletada', 'false');
-    localStorage.setItem('misionSismoCompletada', 'false');
-    localStorage.setItem('misionEvacuacionCompletada', 'false');
-    sessionStorage.removeItem('introTerritorialVista');
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('agentes')
+          .select('id, nivel, mision_volcan, mision_inundacion, mision_sismo, mision_evacuacion')
+          .ilike('nombre', cleanName)
+          .ilike('institucion', escuela)
+          .eq('edad', edad)
+          .order('nivel', { ascending: false })
+          .limit(1);
 
-    try {
-      const { error } = await supabase.from('agentes').insert([{
-        nombre: cleanName,
-        institucion: escuela,
-        edad,
-        avatar,
-        nivel: 1,
-        mision_volcan: false,
-        mision_inundacion: false,
-        mision_sismo: false,
-        mision_evacuacion: false,
-        ultima_conexion: new Date().toISOString()
-      }]);
-      if (error) console.warn('Registro guardado localmente; Supabase no respondió:', error.message);
-    } catch (error) {
-      console.warn('Registro guardado localmente:', error);
+        if (!error && data && data.length > 0) {
+          setDuplicateMatch(data[0] as AgenteMatch);
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.warn('No se pudo verificar si el agente ya existe:', error);
+      }
     }
 
-    window.dispatchEvent(new Event('agenteNivelActualizado'));
-    window.setTimeout(() => navigate('/hub'), 350);
+    await crearAgenteNuevo(cleanName);
+    setLoading(false);
   };
 
   return (
@@ -261,6 +341,40 @@ const KidLobby = () => {
                     <School className="mb-2 text-orange-500" size={22} />{item}
                   </button>
                 ))}
+              </div>
+            </motion.section>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {duplicateMatch && (
+          <motion.div className="fixed inset-0 z-[110] flex items-center justify-center bg-[#071D4A]/80 p-4 backdrop-blur-lg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.section initial={{ y: 24, scale: .96 }} animate={{ y: 0, scale: 1 }} exit={{ y: 16, scale: .96 }} className="w-full max-w-md rounded-[2.2rem] border-4 border-white bg-[#F7FAFF] p-6 text-center shadow-2xl">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-cyan-100 text-cyan-700"><UsersRound size={30} /></div>
+              <h3 className="text-2xl font-black text-slate-900">¡Ya tenemos un agente como tú!</h3>
+              <p className="mt-3 text-sm font-bold leading-relaxed text-slate-600">
+                Encontramos un registro con el mismo nombre, escuela y edad. Tiene <span className="text-cyan-700">Nivel {duplicateMatch.nivel ?? 1} de 5</span> de progreso guardado.
+              </p>
+              <p className="mt-2 text-sm font-bold leading-relaxed text-slate-600">¿Eres tú? Puedes continuar tu misión o, si eres otro agente, crear uno nuevo.</p>
+
+              <div className="mt-6 space-y-3">
+                <button
+                  type="button"
+                  onClick={continuarConProgreso}
+                  disabled={resolvingDuplicate}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-4 text-sm font-black uppercase tracking-wider text-white shadow-lg transition hover:-translate-y-1 disabled:opacity-60"
+                >
+                  {resolvingDuplicate ? 'Cargando tu progreso...' : 'Sí, continuar mi misión'} <ChevronRight size={18} />
+                </button>
+                <button
+                  type="button"
+                  onClick={crearNuevoDesdeAviso}
+                  disabled={resolvingDuplicate}
+                  className="w-full rounded-2xl border-2 border-slate-200 bg-white px-5 py-4 text-sm font-black uppercase tracking-wider text-slate-600 transition hover:-translate-y-1 hover:border-slate-300 disabled:opacity-60"
+                >
+                  No, soy un agente nuevo
+                </button>
               </div>
             </motion.section>
           </motion.div>

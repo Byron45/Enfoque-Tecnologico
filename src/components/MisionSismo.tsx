@@ -44,14 +44,16 @@ const MisionSismo = () => {
     window.dispatchEvent(new Event('agenteNivelActualizado'));
 
     try {
-      const { error } = await supabase
+      const registroId = localStorage.getItem('agenteRegistroId');
+      const query = supabase
         .from('agentes')
         .update({
           mision_sismo: true,
           nivel: 4,
           ultima_conexion: new Date().toISOString()
-        })
-        .eq('nombre', nombre);
+        });
+
+      const { error } = registroId ? await query.eq('id', registroId) : await query.eq('nombre', nombre);
 
       if (error) {
         console.warn('Supabase no sincronizó Sismo, pero el progreso local fue guardado:', error.message);

@@ -5,10 +5,12 @@ import {
   CheckCircle2,
   Download,
   Filter,
+  MessageCircleHeart,
   RefreshCw,
   School,
   Search,
   ShieldAlert,
+  Star,
   Trash2,
   Trophy,
   Users,
@@ -33,6 +35,15 @@ type Agente = {
 
 type EstadoFiltro = 'todos' | 'completos' | 'pendientes';
 
+type Sugerencia = {
+  id: string;
+  created_at: string | null;
+  nombre: string | null;
+  institucion: string | null;
+  calificacion: number;
+  comentario: string | null;
+};
+
 const AdminPanel = () => {
   const [agentes, setAgentes] = useState<Agente[]>([]);
   const [loading, setLoading] = useState(false);
@@ -45,6 +56,7 @@ const AdminPanel = () => {
   const [confirmarEliminacionMasiva, setConfirmarEliminacionMasiva] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deletingBulk, setDeletingBulk] = useState(false);
+  const [sugerencias, setSugerencias] = useState<Sugerencia[]>([]);
 
   const cargarDatos = async () => {
     setLoading(true);
@@ -70,8 +82,24 @@ const AdminPanel = () => {
     }
   };
 
+  const cargarSugerencias = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('sugerencias')
+        .select('id, created_at, nombre, institucion, calificacion, comentario')
+        .order('created_at', { ascending: false })
+        .limit(30);
+
+      if (error) throw error;
+      setSugerencias((data || []) as Sugerencia[]);
+    } catch (error) {
+      console.warn('No se pudieron cargar las sugerencias:', error);
+    }
+  };
+
   useEffect(() => {
     cargarDatos();
+    cargarSugerencias();
   }, []);
 
   const escuelas = useMemo(() => {
@@ -427,7 +455,7 @@ const AdminPanel = () => {
                         <td className="px-5 py-4 font-semibold text-slate-600">{agente.institucion || 'Sin institución'}</td>
                         <td className="px-5 py-4 font-bold">{agente.edad ?? 'N/A'}</td>
                         <td className="px-5 py-4">
-                          <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-black text-white">Nivel {agente.nivel ?? 1}</span>
+                          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-950 text-sm font-black text-white">{agente.nivel ?? 1}</span>
                         </td>
                         <td className="px-5 py-4">
                           <div className="h-3 w-36 overflow-hidden rounded-full bg-slate-100">
@@ -459,6 +487,37 @@ const AdminPanel = () => {
               </tbody>
             </table>
           </div>
+        </section>
+
+        <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-xl md:p-6">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-fuchsia-50 text-fuchsia-700"><MessageCircleHeart size={22} /></div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-fuchsia-600">Buzón de sugerencias</p>
+              <h2 className="text-2xl font-black text-slate-950">Últimas opiniones de los agentes</h2>
+            </div>
+          </div>
+
+          {sugerencias.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 text-sm font-bold text-slate-500">Todavía no hay sugerencias enviadas.</p>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {sugerencias.map((item) => (
+                <div key={item.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1 text-amber-500">
+                      {Array.from({ length: 5 }).map((_, index) => (
+                        <Star key={index} size={14} fill={index < item.calificacion ? 'currentColor' : 'none'} />
+                      ))}
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-400">{formatearFecha(item.created_at)}</span>
+                  </div>
+                  <p className="mt-2 text-xs font-black uppercase tracking-wide text-slate-700">{item.nombre || 'Agente anónimo'} · {item.institucion || 'Sin institución'}</p>
+                  {item.comentario && <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-600">"{item.comentario}"</p>}
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       </section>
 

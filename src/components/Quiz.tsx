@@ -2,11 +2,22 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BrainCircuit, Star, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
+import DragDropQuestion, { type DragOption } from './DragDropQuestion';
+import volcanQ1Base from '../assets/quiz/volcan-q1-base.webp';
+import volcanQ1Correcta from '../assets/quiz/volcan-q1-correcta.webp';
+import volcanQ1Mascarilla from '../assets/quiz/volcan-q1-opt-mascarilla.webp';
+import volcanQ1Bufanda from '../assets/quiz/volcan-q1-opt-bufanda.webp';
+import volcanQ1Gorra from '../assets/quiz/volcan-q1-opt-gorra.webp';
 
 interface Question {
   pregunta: string;
   opciones: string[];
   correcta: number;
+  arrastrar?: {
+    imagenBase: string;
+    imagenCorrecta: string;
+    opciones: DragOption[];
+  };
 }
 
 interface QuizProps {
@@ -24,7 +35,20 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
 
   const preguntas: Record<string, Question[]> = {
     volcan: [
-      { pregunta: '¿Qué debes usar para proteger tus pulmones de la ceniza?', opciones: ['Mascarilla N95', 'Una bufanda delgada', 'Nada, no hace daño'], correcta: 0 },
+      {
+        pregunta: '¿Qué debes usar para proteger tus pulmones de la ceniza?',
+        opciones: ['Mascarilla N95', 'Bufanda', 'Gorra'],
+        correcta: 0,
+        arrastrar: {
+          imagenBase: volcanQ1Base,
+          imagenCorrecta: volcanQ1Correcta,
+          opciones: [
+            { label: 'Mascarilla N95', image: volcanQ1Mascarilla },
+            { label: 'Bufanda', image: volcanQ1Bufanda },
+            { label: 'Gorra', image: volcanQ1Gorra }
+          ]
+        }
+      },
       { pregunta: '¿Qué debes hacer con los depósitos de agua en casa?', opciones: ['Dejarlos abiertos', 'Cubrirlos muy bien', 'Vaciarlos todos'], correcta: 1 },
       { pregunta: 'Si usas lentes de contacto, ¿qué es mejor usar hoy?', opciones: ['Mis lentes de contacto', 'No usar nada', 'Gafas o lentes de armazón'], correcta: 2 }
     ],
@@ -61,20 +85,24 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
     const nuevoNivel = niveles[tipo];
     const campoMision = camposMision[tipo];
     const nombreGuardado = localStorage.getItem('agenteNombre');
+    const registroId = localStorage.getItem('agenteRegistroId');
 
     localStorage.setItem('agenteNivel', nuevoNivel.toString());
     localStorage.setItem(`mision${tipo.charAt(0).toUpperCase()}${tipo.slice(1)}Completada`, 'true');
 
     try {
-      if (nombreGuardado) {
-        const { error } = await supabase
+      if (registroId || nombreGuardado) {
+        const query = supabase
           .from('agentes')
           .update({
             nivel: nuevoNivel,
             [campoMision]: true,
             ultima_conexion: new Date().toISOString()
-          })
-          .eq('nombre', nombreGuardado);
+          });
+
+        const { error } = registroId
+          ? await query.eq('id', registroId)
+          : await query.eq('nombre', nombreGuardado as string);
 
         if (error) {
           console.warn('Supabase no sincronizó el quiz, pero el progreso local fue guardado:', error.message);
@@ -162,30 +190,44 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
               {actualQuestions[step].pregunta}
             </h2>
 
-            <div className="space-y-4 mb-8">
-              {actualQuestions[step].opciones.map((opcion, index) => {
-                const isSelected = selected === index;
-                const isCorrect = isSelected && status === 'correct';
+            {actualQuestions[step].arrastrar ? (
+              <div className="mb-8">
+                <DragDropQuestion
+                  imagenBase={actualQuestions[step].arrastrar!.imagenBase}
+                  imagenCorrecta={actualQuestions[step].arrastrar!.imagenCorrecta}
+                  opciones={actualQuestions[step].arrastrar!.opciones}
+                  status={status}
+                  selected={selected}
+                  disabled={status !== 'idle' || isSyncing}
+                  onDrop={handleSelect}
+                />
+              </div>
+            ) : (
+              <div className="space-y-4 mb-8">
+                {actualQuestions[step].opciones.map((opcion, index) => {
+                  const isSelected = selected === index;
+                  const isCorrect = isSelected && status === 'correct';
 
-                return (
-                  <button
-                    key={opcion}
-                    onClick={() => handleSelect(index)}
-                    disabled={status !== 'idle'}
-                    className={`w-full p-5 rounded-2xl border-2 font-black text-left md:text-lg transition-all flex items-center justify-between ${
-                      isSelected
-                        ? isCorrect
-                          ? 'bg-emerald-500 border-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.35)]'
-                          : 'bg-red-600 border-red-400 text-white'
-                        : 'bg-black/40 border-white/10 text-slate-200 hover:border-white/30'
-                    }`}
-                  >
-                    <span>{opcion}</span>
-                    {isSelected && (isCorrect ? <CheckCircle2 size={24} /> : <XCircle size={24} />)}
-                  </button>
-                );
-              })}
-            </div>
+                  return (
+                    <button
+                      key={opcion}
+                      onClick={() => handleSelect(index)}
+                      disabled={status !== 'idle'}
+                      className={`w-full p-5 rounded-2xl border-2 font-black text-left md:text-lg transition-all flex items-center justify-between ${
+                        isSelected
+                          ? isCorrect
+                            ? 'bg-emerald-500 border-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.35)]'
+                            : 'bg-red-600 border-red-400 text-white'
+                          : 'bg-black/40 border-white/10 text-slate-200 hover:border-white/30'
+                      }`}
+                    >
+                      <span>{opcion}</span>
+                      {isSelected && (isCorrect ? <CheckCircle2 size={24} /> : <XCircle size={24} />)}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             <div className="flex justify-between items-center">
               <button

@@ -8,6 +8,7 @@ import {
   Compass,
   LogOut,
   Map,
+  MessageCircleHeart,
   Mountain,
   PlayCircle,
   ShieldCheck,
@@ -18,7 +19,9 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import brandLogoUrl from '../assets/logo-agentes-prevencion.png';
+import CertificateModal from './CertificateModal';
 import GuideAssistant from './GuideAssistant';
+import SuggestionBox from './SuggestionBox';
 import { GUIDE_STEPS } from '../utils/guideSteps';
 
 const LOGO_URL = brandLogoUrl;
@@ -70,7 +73,8 @@ const missions = [
 const tools = [
   { title: 'Videos', text: 'Mira cápsulas cortas y entretenidas.', path: '/videos', icon: Video, accent: 'border-rose-200 bg-rose-50 text-rose-700' },
   { title: 'Mapas', text: 'Explora amenazas y zonas seguras.', path: '/mapas', icon: Map, accent: 'border-cyan-200 bg-cyan-50 text-cyan-700' },
-  { title: 'Guía rápida', text: 'Recuerda los pasos más importantes.', path: '/hub', icon: BookOpen, accent: 'border-violet-200 bg-violet-50 text-violet-700' }
+  { title: 'Guía rápida', text: 'Recuerda los pasos más importantes.', path: '/hub', icon: BookOpen, accent: 'border-violet-200 bg-violet-50 text-violet-700' },
+  { title: 'Sugerencias', text: 'Cuéntanos qué te pareció la aventura.', path: '', icon: MessageCircleHeart, accent: 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700' }
 ];
 
 const KidHub = () => {
@@ -79,6 +83,8 @@ const KidHub = () => {
   const [name, setName] = useState('Agente');
   const [school, setSchool] = useState('Tu escuela');
   const [avatar, setAvatar] = useState<'chica' | 'chico'>('chico');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showCertificate, setShowCertificate] = useState(false);
 
   useEffect(() => {
     const sync = () => {
@@ -200,14 +206,31 @@ const KidHub = () => {
           </div>
         </section>
 
+        {level >= 5 && (
+          <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="overflow-hidden rounded-[2.2rem] border-4 border-white bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 p-6 shadow-[0_22px_65px_rgba(0,0,0,.22)] md:p-8">
+            <div className="flex flex-col items-center gap-5 text-center md:flex-row md:justify-between md:text-left">
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/40 text-[#071D4A] shadow-lg"><Award size={34} /></div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[.2em] text-[#071D4A]/70">¡Misión cumplida!</p>
+                  <h2 className="text-2xl font-black text-[#071D4A] md:text-3xl">Completaste las 4 misiones. ¡Reclama tu certificado!</h2>
+                </div>
+              </div>
+              <button onClick={() => setShowCertificate(true)} className="flex shrink-0 items-center gap-2 rounded-2xl bg-[#071D4A] px-6 py-4 text-sm font-black uppercase tracking-wider text-white shadow-lg transition hover:-translate-y-1 hover:bg-[#0B4BB3]">
+                <Award size={18} /> Obtener certificado
+              </button>
+            </div>
+          </motion.section>
+        )}
+
         <section>
           <p className="text-[10px] font-black uppercase tracking-[.2em] text-cyan-300">Caja de herramientas</p>
           <h2 className="mt-1 text-3xl font-black text-white">Aprende de otras formas</h2>
-          <div className="mt-4 grid gap-4 md:grid-cols-3">
+          <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {tools.map((tool) => {
               const Icon = tool.icon;
               return (
-                <button key={tool.title} onClick={() => navigate(tool.path)} className={`rounded-[2rem] border-4 p-5 text-left shadow-[0_18px_50px_rgba(0,0,0,.18)] transition hover:-translate-y-1 ${tool.accent}`}>
+                <button key={tool.title} onClick={() => (tool.path ? navigate(tool.path) : setShowSuggestions(true))} className={`rounded-[2rem] border-4 p-5 text-left shadow-[0_18px_50px_rgba(0,0,0,.18)] transition hover:-translate-y-1 ${tool.accent}`}>
                   <Icon size={30} />
                   <h3 className="mt-3 text-2xl font-black">{tool.title}</h3>
                   <p className="mt-1 text-sm font-bold opacity-80">{tool.text}</p>
@@ -219,6 +242,8 @@ const KidHub = () => {
       </section>
 
       <GuideAssistant guideId="hub" steps={GUIDE_STEPS.hub} />
+      <SuggestionBox open={showSuggestions} onClose={() => setShowSuggestions(false)} />
+      <CertificateModal open={showCertificate} onClose={() => setShowCertificate(false)} nombre={name} institucion={school} />
     </main>
   );
 };
