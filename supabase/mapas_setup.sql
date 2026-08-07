@@ -1,6 +1,3 @@
--- Configuración necesaria para publicar mapas desde la aplicación.
--- Ejecuta este archivo una sola vez en Supabase > SQL Editor.
-
 create table if not exists public.mapas_recursos (
   id text primary key,
   titulo text,
@@ -11,7 +8,6 @@ create table if not exists public.mapas_recursos (
   updated_at timestamptz not null default now()
 );
 
--- También corrige una tabla antigua que exista pero esté incompleta.
 alter table public.mapas_recursos add column if not exists titulo text;
 alter table public.mapas_recursos add column if not exists descripcion text;
 alter table public.mapas_recursos add column if not exists tif_url text;

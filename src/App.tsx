@@ -4,6 +4,7 @@ import KidLobby from './components/KidLobby';
 import HubWithWelcome from './components/HubWithWelcome';
 import MisionVolcan from './components/MisionVolcan';
 import MisionInundacion from './components/MisionInundacion';
+import MisionSismo from './components/MisionSismo';
 import MisionEvacuacion from './components/MisionEvacuacion';
 import AdminPanel from './components/AdminPanel';
 import AdminGate from './components/AdminGate';
@@ -24,6 +25,7 @@ function App() {
 
           <Route path="/volcan" element={<MisionVolcan />} />
           <Route path="/inundacion" element={<MisionInundacion />} />
+          <Route path="/sismo" element={<MisionSismo />} />
           <Route path="/evacuacion" element={<MisionEvacuacion />} />
 
           <Route path="/mapas" element={<MapasPage />} />

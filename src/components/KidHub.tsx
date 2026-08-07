@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
+  Activity,
   Award,
   BookOpen,
   ChevronRight,
@@ -47,10 +48,19 @@ const missions = [
     sticker: '🌊'
   },
   {
+    title: 'Sismos',
+    description: 'Aprende a protegerte durante un movimiento telúrico y qué hacer después.',
+    path: '/sismo',
+    level: 3,
+    icon: Activity,
+    gradient: 'from-amber-500 via-orange-600 to-stone-700',
+    sticker: '📳'
+  },
+  {
     title: 'Evacuación',
     description: 'Practica cómo salir con orden y llegar al punto seguro.',
     path: '/evacuacion',
-    level: 3,
+    level: 4,
     icon: Compass,
     gradient: 'from-emerald-500 via-green-500 to-lime-500',
     sticker: '🧭'
@@ -76,7 +86,7 @@ const KidHub = () => {
       setSchool(localStorage.getItem('agenteEscuela') || 'Tu escuela');
       setAvatar(localStorage.getItem('agenteAvatar') === 'chica' ? 'chica' : 'chico');
       const storedLevel = Number(localStorage.getItem('agenteNivel') || '1');
-      setLevel(Number.isFinite(storedLevel) ? Math.min(Math.max(storedLevel, 1), 4) : 1);
+      setLevel(Number.isFinite(storedLevel) ? Math.min(Math.max(storedLevel, 1), 5) : 1);
     };
 
     sync();
@@ -88,7 +98,7 @@ const KidHub = () => {
     };
   }, []);
 
-  const progress = useMemo(() => Math.round(((level - 1) / 3) * 100), [level]);
+  const progress = useMemo(() => Math.round(((level - 1) / 4) * 100), [level]);
 
   const logout = () => {
     localStorage.clear();
@@ -130,7 +140,7 @@ const KidHub = () => {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[.2em] text-violet-600">Tu camino de héroe</p>
-                <h2 className="mt-1 text-3xl font-black text-[#071D4A] md:text-4xl">Nivel {level} de 4</h2>
+                <h2 className="mt-1 text-3xl font-black text-[#071D4A] md:text-4xl">Nivel {level} de 5</h2>
               </div>
               <div className="rounded-2xl bg-yellow-300 p-4 text-yellow-900 shadow-lg"><Star size={34} fill="currentColor" /></div>
             </div>
@@ -161,7 +171,7 @@ const KidHub = () => {
             <Award className="hidden text-yellow-300 md:block" size={48} />
           </div>
 
-          <div className="grid gap-5 lg:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {missions.map((mission) => {
               const unlocked = level >= mission.level;
               const Icon = mission.icon;

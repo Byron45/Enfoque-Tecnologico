@@ -1,28 +1,26 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  AlertTriangle,
+  Activity,
   CheckCircle2,
   ChevronLeft,
-  Droplets,
-  EyeOff,
-  Flame,
-  Mountain,
+  Home,
+  PhoneCall,
   PlayCircle,
   ShieldCheck,
   Sparkles
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import misionVolcanHeroUrl from '../assets/mision-volcan-hero.webp';
+import misionSismoHeroUrl from '../assets/mision-sismo-hero.jpg';
 import GuideAssistant from './GuideAssistant';
 import MissionVisualPanel from './MissionVisualPanel';
 import Quiz from './Quiz';
 import { GUIDE_STEPS } from '../utils/guideSteps';
 
-const MISSION_IMAGE_URL = misionVolcanHeroUrl;
+const MISSION_IMAGE_URL = misionSismoHeroUrl;
 
-const MisionVolcan = () => {
+const MisionSismo = () => {
   const navigate = useNavigate();
   const [isCompleted, setIsCompleted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -41,22 +39,22 @@ const MisionVolcan = () => {
       return;
     }
 
-    localStorage.setItem('agenteNivel', '2');
-    localStorage.setItem('misionVolcanCompletada', 'true');
+    localStorage.setItem('agenteNivel', '4');
+    localStorage.setItem('misionSismoCompletada', 'true');
     window.dispatchEvent(new Event('agenteNivelActualizado'));
 
     try {
       const { error } = await supabase
         .from('agentes')
         .update({
-          mision_volcan: true,
-          nivel: 2,
+          mision_sismo: true,
+          nivel: 4,
           ultima_conexion: new Date().toISOString()
         })
         .eq('nombre', nombre);
 
       if (error) {
-        console.warn('Supabase no sincronizó Volcán, pero el progreso local fue guardado:', error.message);
+        console.warn('Supabase no sincronizó Sismo, pero el progreso local fue guardado:', error.message);
       }
     } catch (error) {
       console.warn('Fallo de conexión con Supabase. Progreso local guardado:', error);
@@ -73,18 +71,18 @@ const MisionVolcan = () => {
   const consejos = [
     {
       icono: <ShieldCheck size={20} />,
-      titulo: 'Protección facial',
-      texto: 'Usa mascarilla para evitar respirar ceniza.'
+      titulo: 'Agáchate y cúbrete',
+      texto: 'Ponte bajo una mesa firme y protege tu cabeza.'
     },
     {
-      icono: <EyeOff size={20} />,
-      titulo: 'Visión segura',
-      texto: 'Evita lentes de contacto si hay ceniza en el ambiente.'
+      icono: <Home size={20} />,
+      titulo: 'Aléjate de ventanas',
+      texto: 'Evita vidrios, muebles altos y objetos que puedan caer.'
     },
     {
-      icono: <Droplets size={20} />,
-      titulo: 'Reserva hídrica',
-      texto: 'Cubre tanques y recipientes de agua.'
+      icono: <PhoneCall size={20} />,
+      titulo: 'Después del sismo',
+      texto: 'Sal con calma, revisa si hay heridos y espera posibles réplicas.'
     }
   ];
 
@@ -94,11 +92,11 @@ const MisionVolcan = () => {
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <motion.div
           animate={{ rotate: 360 }}
-          transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-          className="absolute left-1/2 top-1/2 w-[1100px] h-[1100px] -translate-x-1/2 -translate-y-1/2"
+          transition={{ duration: 19, repeat: Infinity, ease: 'linear' }}
+          className="absolute left-1/2 top-1/2 w-[1110px] h-[1110px] -translate-x-1/2 -translate-y-1/2"
         >
-          <div className="absolute top-0 left-1/2 w-96 h-96 bg-orange-500/35 rounded-full blur-[125px]" />
-          <div className="absolute bottom-10 right-0 w-[420px] h-[420px] bg-red-500/25 rounded-full blur-[135px]" />
+          <div className="absolute top-0 left-1/2 w-96 h-96 bg-amber-500/35 rounded-full blur-[125px]" />
+          <div className="absolute bottom-10 right-0 w-[420px] h-[420px] bg-stone-500/25 rounded-full blur-[135px]" />
           <div className="absolute left-0 top-1/2 w-80 h-80 bg-yellow-400/18 rounded-full blur-[120px]" />
         </motion.div>
 
@@ -108,19 +106,19 @@ const MisionVolcan = () => {
       <section className="relative z-10 h-full max-w-7xl mx-auto grid grid-rows-[auto_1fr] gap-4">
         <header className="bg-white/5 border border-white/10 backdrop-blur-2xl rounded-[2rem] px-5 py-4 flex items-center justify-between gap-4 shadow-2xl">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-orange-400 mb-1">
-              <Flame size={15} className="animate-pulse" />
-              <span className="text-[9px] font-black uppercase tracking-[0.35em]">Protocolo de ceniza activado</span>
+            <div className="flex items-center gap-2 text-amber-300 mb-1">
+              <Activity size={15} className="animate-pulse" />
+              <span className="text-[9px] font-black uppercase tracking-[0.35em]">Protocolo sísmico activado</span>
             </div>
 
             <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter leading-none">
-              Alerta <span className="text-orange-500">Volcánica</span>
+              Alerta <span className="text-amber-400">Sísmica</span>
             </h1>
           </div>
 
           <button
             onClick={() => navigate('/hub')}
-            className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-3 rounded-2xl text-white/60 text-[10px] font-black uppercase tracking-widest hover:text-orange-400 hover:border-orange-400/40 transition-all"
+            className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-3 rounded-2xl text-white/60 text-[10px] font-black uppercase tracking-widest hover:text-amber-300 hover:border-amber-400/40 transition-all"
           >
             <ChevronLeft size={16} />
             <span className="hidden sm:inline">Volver al Hub</span>
@@ -131,24 +129,24 @@ const MisionVolcan = () => {
           <section className="bg-white/5 border border-white/10 backdrop-blur-2xl rounded-[2rem] overflow-hidden min-h-0 grid grid-rows-[1fr_auto]">
             <MissionVisualPanel
               imageUrl={MISSION_IMAGE_URL}
-              missionLabel="Misión 01"
-              title="Actividad volcánica"
-              description="Reconoce señales de alerta, protege tus vías respiratorias y ubica zonas seguras ante caída de ceniza."
-              accentTextClass="text-orange-300"
-              accentBgClass="from-orange-950 via-red-950 to-slate-950"
-              icon={<Mountain size={16} />}
+              missionLabel="Misión 03"
+              title="Agáchate, cúbrete y agárrate"
+              description="Reconoce qué hacer durante un sismo: protégete bajo un mueble firme, aléjate de ventanas y espera con calma a que termine el movimiento."
+              accentTextClass="text-amber-300"
+              accentBgClass="from-amber-950 via-stone-900 to-slate-950"
+              icon={<Activity size={16} />}
             />
 
             <div className="p-4 md:p-5 bg-slate-950/60 border-t border-white/10">
               <div className="flex items-start gap-3">
-                <div className="bg-orange-500/15 border border-orange-400/20 p-3 rounded-2xl text-orange-300">
-                  <AlertTriangle size={20} />
+                <div className="bg-amber-500/15 border border-amber-400/20 p-3 rounded-2xl text-amber-300">
+                  <ShieldCheck size={20} />
                 </div>
 
                 <div>
-                  <h3 className="text-orange-300 font-black text-[10px] uppercase tracking-[0.25em] mb-1">Análisis de misión</h3>
+                  <h3 className="text-amber-300 font-black text-[10px] uppercase tracking-[0.25em] mb-1">Análisis de misión</h3>
                   <p className="text-white/70 text-xs md:text-sm leading-relaxed font-semibold">
-                    El volcán Tungurahua forma parte de la identidad del Distrito 18D03. Aprende a proteger tus vías respiratorias, cuidar el agua y reconocer zonas de riesgo.
+                    Ecuador está en el Cinturón de Fuego del Pacífico. Aprende a protegerte durante el movimiento telúrico, cuidar tu cabeza y cuello, y saber qué hacer una vez que el sismo termina.
                   </p>
                 </div>
               </div>
@@ -157,12 +155,12 @@ const MisionVolcan = () => {
 
           <aside className="grid grid-rows-[auto_1fr_auto] gap-4 min-h-0">
             <div className="bg-white/5 border border-white/10 backdrop-blur-2xl rounded-[2rem] p-5">
-              <div className="flex items-center gap-2 text-orange-300 mb-2">
+              <div className="flex items-center gap-2 text-amber-300 mb-2">
                 <Sparkles size={16} />
                 <span className="text-[9px] font-black uppercase tracking-[0.28em]">Objetivo</span>
               </div>
               <p className="text-sm text-white/75 font-semibold leading-relaxed">
-                Observa el escenario, recuerda los consejos tácticos y completa la evaluación para subir al Nivel 2.
+                Observa el escenario, recuerda los consejos tácticos y completa la evaluación para subir al Nivel 4.
               </p>
             </div>
 
@@ -170,7 +168,7 @@ const MisionVolcan = () => {
               {consejos.map((item) => (
                 <motion.div key={item.titulo} whileHover={{ y: -3, scale: 1.01 }} className="bg-white/5 border border-white/10 rounded-[1.5rem] p-4 backdrop-blur-xl">
                   <div className="flex items-start gap-3">
-                    <div className="bg-orange-500/15 border border-orange-400/20 p-2.5 rounded-2xl text-orange-300">{item.icono}</div>
+                    <div className="bg-amber-500/15 border border-amber-400/20 p-2.5 rounded-2xl text-amber-300">{item.icono}</div>
                     <div>
                       <h4 className="font-black text-[10px] uppercase tracking-widest mb-1 text-white">{item.titulo}</h4>
                       <p className="text-slate-400 text-[11px] leading-relaxed font-semibold uppercase">{item.texto}</p>
@@ -187,20 +185,20 @@ const MisionVolcan = () => {
               whileHover={!loading && !isCompleted ? { scale: 1.02, y: -2 } : {}}
               whileTap={!loading && !isCompleted ? { scale: 0.97 } : {}}
               className={`w-full p-4 rounded-[1.5rem] font-black uppercase tracking-[0.22em] transition-all flex items-center justify-center gap-3 text-xs md:text-sm ${
-                isCompleted ? 'bg-emerald-500 text-white' : 'bg-orange-600 hover:bg-orange-500 text-white shadow-[0_15px_35px_rgba(249,115,22,0.28)]'
+                isCompleted ? 'bg-emerald-500 text-white' : 'bg-amber-600 hover:bg-amber-500 text-white shadow-[0_15px_35px_rgba(217,119,6,0.28)]'
               } disabled:opacity-70`}
             >
-              {loading ? 'Actualizando nivel...' : isCompleted ? <><CheckCircle2 size={18} />Misión lograda</> : <><PlayCircle size={18} />Iniciar evaluación</>}
+              {loading ? 'Actualizando nivel...' : isCompleted ? <><CheckCircle2 size={18} />Nivel 4 desbloqueado</> : <><PlayCircle size={18} />Iniciar evaluación</>}
             </motion.button>
           </aside>
         </div>
       </section>
 
-      {showQuiz && <Quiz tipo="volcan" onClose={() => setShowQuiz(false)} onWin={handleWinQuiz} />}
+      {showQuiz && <Quiz tipo="sismo" onClose={() => setShowQuiz(false)} onWin={handleWinQuiz} />}
 
-      <GuideAssistant guideId="mision-volcan" steps={GUIDE_STEPS['mision-volcan']} />
+      <GuideAssistant guideId="mision-sismo" steps={GUIDE_STEPS['mision-sismo']} />
     </main>
   );
 };
 
-export default MisionVolcan;
+export default MisionSismo;

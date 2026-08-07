@@ -82,6 +82,10 @@ const MapasPage = () => {
     if (!overrides) return base;
     return base.map((item) => ({ ...item, label: overrides[item.value] || item.label }));
   }, [activePalette, selectedResource]);
+  const visibleLegend = useMemo(() => {
+    if (selectedResource.id !== 'sismico') return selectedLegend;
+    return selectedLegend.filter((item) => item.value !== 5);
+  }, [selectedLegend, selectedResource.id]);
   const schoolPoints = useMemo(() => (raster?.points || []).filter((point) => point.insideMap && point.xRatio !== undefined && point.yRatio !== undefined), [raster]);
   const hasVisibleMap = Boolean(mapaUrl);
 
@@ -482,7 +486,7 @@ const MapasPage = () => {
 
               <PanelCard>
                 <p className="text-orange-300 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Leyenda</p><h2 className="text-2xl font-black mb-4">Susceptibilidad</h2>
-                <div className="space-y-3">{selectedLegend.map((item) => <div key={item.value} className="flex items-start justify-between gap-3 rounded-2xl border border-white/10 bg-slate-950/55 p-3"><div className="flex items-start gap-3"><span className="mt-0.5 h-6 w-10 shrink-0 rounded-lg border border-white/20" style={{ backgroundColor: item.color }} /><span className="font-black text-sm leading-snug">{item.label}</span></div>{counts && <span className="shrink-0 text-[10px] font-bold text-slate-500">{counts[item.value]?.toLocaleString('es-EC')}</span>}</div>)}</div>
+                <div className="space-y-3">{visibleLegend.map((item) => <div key={item.value} className="flex items-start justify-between gap-3 rounded-2xl border border-white/10 bg-slate-950/55 p-3"><div className="flex items-start gap-3"><span className="mt-0.5 h-6 w-10 shrink-0 rounded-lg border border-white/20" style={{ backgroundColor: item.color }} /><span className="font-black text-sm leading-snug">{item.label}</span></div>{counts && <span className="shrink-0 text-[10px] font-bold text-slate-500">{counts[item.value]?.toLocaleString('es-EC')}</span>}</div>)}</div>
               </PanelCard>
 
               <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="rounded-[1.5rem] border border-emerald-300/20 bg-emerald-400/10 p-4">

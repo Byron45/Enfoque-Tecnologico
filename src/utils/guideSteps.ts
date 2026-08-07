@@ -35,7 +35,7 @@ export const GUIDE_STEPS: Record<string, GuideStep[]> = {
     },
     {
       title: 'Elige tu misión',
-      text: 'Tienes tres misiones: Alerta Volcánica, Inundaciones y Evacuación. Se desbloquean una por una, en orden.'
+      text: 'Tienes cuatro misiones: Alerta Volcánica, Inundaciones, Sismos y Evacuación. Se desbloquean una por una, en orden.'
     },
     {
       title: 'Caja de herramientas',
@@ -90,6 +90,20 @@ export const GUIDE_STEPS: Record<string, GuideStep[]> = {
     {
       title: 'Responde la evaluación',
       text: 'Toca "Iniciar evaluación" y responde las preguntas para completar la misión.'
+    }
+  ],
+  'mision-sismo': [
+    {
+      title: 'Alerta Sísmica',
+      text: 'Esta misión te enseña qué hacer antes, durante y después de un sismo.'
+    },
+    {
+      title: 'Lee los consejos',
+      text: 'Revisa las tarjetas de la derecha: agáchate y cúbrete, aléjate de ventanas y qué revisar después.'
+    },
+    {
+      title: 'Responde la evaluación',
+      text: 'Cuando estés listo, toca "Iniciar evaluación" y responde las preguntas para completar la misión.'
     }
   ],
   'mision-evacuacion': [

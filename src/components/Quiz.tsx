@@ -10,7 +10,7 @@ interface Question {
 }
 
 interface QuizProps {
-  tipo: 'volcan' | 'inundacion' | 'evacuacion';
+  tipo: 'volcan' | 'inundacion' | 'sismo' | 'evacuacion';
   onWin: () => void;
   onClose: () => void;
 }
@@ -33,6 +33,11 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
       { pregunta: '¿Hacia dónde debes dirigirte en una inundación?', opciones: ['A la calle', 'A zonas altas', 'Al sótano'], correcta: 1 },
       { pregunta: '¿Qué debe tener tu mochila de emergencia?', opciones: ['Juguetes', 'Botiquín y linterna', 'Libros'], correcta: 1 }
     ],
+    sismo: [
+      { pregunta: '¿Qué debes hacer apenas sientes un sismo fuerte?', opciones: ['Correr afuera de inmediato', 'Agacharte, cubrirte y sujetarte', 'Quedarte de pie junto a la ventana'], correcta: 1 },
+      { pregunta: '¿Dónde es más seguro protegerte durante el movimiento?', opciones: ['Bajo una mesa resistente', 'Cerca de un espejo grande', 'Dentro del ascensor'], correcta: 0 },
+      { pregunta: 'Cuando termina el sismo, ¿qué debes revisar primero?', opciones: ['Si hay heridos o daños visibles', 'Tus redes sociales', 'Si tus amigos lo sintieron'], correcta: 0 }
+    ],
     evacuacion: [
       { pregunta: '¿Qué herramienta es vital para mantener la calma?', opciones: ['Seguir la señalética', 'Correr rápido', 'Gritar fuerte'], correcta: 0 },
       { pregunta: '¿Dónde debes reunirte con tu familia?', opciones: ['Dentro de casa', 'Punto de encuentro seguro', 'En el auto'], correcta: 1 },
@@ -45,10 +50,11 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
   const handleLevelUp = async () => {
     setIsSyncing(true);
 
-    const niveles = { volcan: 2, inundacion: 3, evacuacion: 4 };
+    const niveles = { volcan: 2, inundacion: 3, sismo: 4, evacuacion: 5 };
     const camposMision = {
       volcan: 'mision_volcan',
       inundacion: 'mision_inundacion',
+      sismo: 'mision_sismo',
       evacuacion: 'mision_evacuacion'
     } as const;
 

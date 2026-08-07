@@ -26,6 +26,7 @@ type Agente = {
   nivel: number | null;
   mision_volcan: boolean | null;
   mision_inundacion: boolean | null;
+  mision_sismo: boolean | null;
   mision_evacuacion: boolean | null;
   ultima_conexion: string | null;
 };
@@ -52,7 +53,7 @@ const AdminPanel = () => {
     try {
       const { data, error } = await supabase
         .from('agentes')
-        .select('id, created_at, nombre, institucion, edad, avatar, nivel, mision_volcan, mision_inundacion, mision_evacuacion, ultima_conexion')
+        .select('id, created_at, nombre, institucion, edad, avatar, nivel, mision_volcan, mision_inundacion, mision_sismo, mision_evacuacion, ultima_conexion')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -205,6 +206,7 @@ const AdminPanel = () => {
       'Progreso',
       'Volcán',
       'Inundación',
+      'Sismo',
       'Evacuación',
       'Registro',
       'Última conexión'
@@ -218,6 +220,7 @@ const AdminPanel = () => {
       `${obtenerProgreso(a)}%`,
       a.mision_volcan ? 'Completada' : 'Pendiente',
       a.mision_inundacion ? 'Completada' : 'Pendiente',
+      a.mision_sismo ? 'Completada' : 'Pendiente',
       a.mision_evacuacion ? 'Completada' : 'Pendiente',
       formatearFecha(a.created_at),
       formatearFecha(a.ultima_conexion)
@@ -436,6 +439,7 @@ const AdminPanel = () => {
                           <div className="flex gap-1.5">
                             <MissionDot active={Boolean(agente.mision_volcan)} label="V" />
                             <MissionDot active={Boolean(agente.mision_inundacion)} label="I" />
+                            <MissionDot active={Boolean(agente.mision_sismo)} label="S" />
                             <MissionDot active={Boolean(agente.mision_evacuacion)} label="E" />
                           </div>
                         </td>
@@ -554,8 +558,8 @@ const MissionDot = ({ active, label }: { active: boolean; label: string }) => (
 );
 
 const obtenerProgreso = (agente: Agente) => {
-  const completadas = [agente.mision_volcan, agente.mision_inundacion, agente.mision_evacuacion].filter(Boolean).length;
-  return Math.round((completadas / 3) * 100);
+  const completadas = [agente.mision_volcan, agente.mision_inundacion, agente.mision_sismo, agente.mision_evacuacion].filter(Boolean).length;
+  return Math.round((completadas / 4) * 100);
 };
 
 const formatearFecha = (value: string | null) => {

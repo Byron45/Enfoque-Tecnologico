@@ -95,6 +95,7 @@ const KidLobby = () => {
     localStorage.setItem('agenteNivel', '1');
     localStorage.setItem('misionVolcanCompletada', 'false');
     localStorage.setItem('misionInundacionCompletada', 'false');
+    localStorage.setItem('misionSismoCompletada', 'false');
     localStorage.setItem('misionEvacuacionCompletada', 'false');
     sessionStorage.removeItem('introTerritorialVista');
 
@@ -107,6 +108,7 @@ const KidLobby = () => {
         nivel: 1,
         mision_volcan: false,
         mision_inundacion: false,
+        mision_sismo: false,
         mision_evacuacion: false,
         ultima_conexion: new Date().toISOString()
       }]);
