@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { motion, type PanInfo } from 'framer-motion';
-import { CheckCircle2, XCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, HelpCircle } from 'lucide-react';
 
 export type DragOption = { label: string; image: string };
 
@@ -16,7 +16,7 @@ type Props = {
 
 const DragDropQuestion = ({ imagenBase, imagenCorrecta, opciones, status, selected, disabled, onDrop }: Props) => {
   const dropZoneRef = useRef<HTMLDivElement | null>(null);
-  const escenaImagen = status === 'correct' ? imagenCorrecta : imagenBase;
+  const tieneBase = imagenBase.length > 0;
 
   const handleDragEnd = (index: number) => (_event: unknown, info: PanInfo) => {
     if (disabled) return;
@@ -26,6 +26,53 @@ const DragDropQuestion = ({ imagenBase, imagenCorrecta, opciones, status, select
     const { x, y } = info.point;
     const dentroDeLaZona = x >= zone.left && x <= zone.right && y >= zone.top && y <= zone.bottom;
     if (dentroDeLaZona) onDrop(index);
+  };
+
+  const renderDropZoneContent = () => {
+    if (status === 'correct') {
+      return (
+        <motion.img
+          key="correcta"
+          src={imagenCorrecta}
+          alt="¡Respuesta correcta!"
+          initial={{ scale: 0.85, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.32 }}
+          className="pointer-events-none h-full w-full select-none object-contain p-3"
+          draggable={false}
+        />
+      );
+    }
+
+    if (tieneBase) {
+      return (
+        <motion.img
+          key="base"
+          src={imagenBase}
+          alt="Escenario de la pregunta"
+          initial={{ scale: 0.85, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.32 }}
+          className="pointer-events-none h-full w-full select-none object-contain p-3"
+          draggable={false}
+        />
+      );
+    }
+
+    /* Placeholder mode: empty box with question mark */
+    return (
+      <motion.div
+        key="placeholder"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex flex-col items-center justify-center gap-2"
+      >
+        <HelpCircle size={48} className="text-white/20" strokeWidth={1.5} />
+        <span className="text-[10px] font-bold uppercase tracking-widest text-white/25">
+          Suelta aquí
+        </span>
+      </motion.div>
+    );
   };
 
   return (
@@ -40,16 +87,7 @@ const DragDropQuestion = ({ imagenBase, imagenCorrecta, opciones, status, select
               : 'border-white/25 bg-white/5'
         }`}
       >
-        <motion.img
-          key={escenaImagen}
-          src={escenaImagen}
-          alt="Escenario de la pregunta"
-          initial={{ scale: 0.85, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.32 }}
-          className="pointer-events-none h-full w-full select-none object-contain p-3"
-          draggable={false}
-        />
+        {renderDropZoneContent()}
         {status === 'correct' && (
           <motion.div
             initial={{ scale: 0, opacity: 0 }}

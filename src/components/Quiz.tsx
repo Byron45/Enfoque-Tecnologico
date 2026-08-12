@@ -8,6 +8,14 @@ import volcanQ1Correcta from '../assets/quiz/volcan-q1-correcta.webp';
 import volcanQ1Mascarilla from '../assets/quiz/volcan-q1-opt-mascarilla.webp';
 import volcanQ1Bufanda from '../assets/quiz/volcan-q1-opt-bufanda.webp';
 import volcanQ1Gorra from '../assets/quiz/volcan-q1-opt-gorra.webp';
+import volcanQ2OptAbierto from '../assets/quiz/volcan-q2-opt-abierto.png';
+import volcanQ2OptCubierto from '../assets/quiz/volcan-q2-opt-cubierto.png';
+import volcanQ2OptDesbordado from '../assets/quiz/volcan-q2-opt-desbordado.png';
+import volcanQ3Base from '../assets/quiz/volcan-q3-base.png';
+import volcanQ3Correcta from '../assets/quiz/volcan-q3-correcta.png';
+import volcanQ3OptGafasProteccion from '../assets/quiz/volcan-q3-opt-gafas-proteccion.png';
+import volcanQ3OptLentesContacto from '../assets/quiz/volcan-q3-opt-lentes-contacto.png';
+import volcanQ3OptGafasSol from '../assets/quiz/volcan-q3-opt-gafas-sol.png';
 
 interface Question {
   pregunta: string;
@@ -62,8 +70,34 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
           ]
         }
       },
-      { pregunta: '¿Qué debes hacer con los depósitos de agua en casa?', opciones: ['Dejarlos abiertos', 'Cubrirlos muy bien', 'Vaciarlos todos'], correcta: 1 },
-      { pregunta: 'Si usas lentes de contacto, ¿qué es mejor usar hoy?', opciones: ['Mis lentes de contacto', 'No usar nada', 'Gafas o lentes de armazón'], correcta: 2 }
+      {
+        pregunta: '¿Qué debes hacer con los depósitos de agua en casa?',
+        opciones: ['Dejarlos abiertos', 'Cubrirlos muy bien', 'Vaciarlos todos'],
+        correcta: 1,
+        arrastrar: {
+          imagenBase: '',
+          imagenCorrecta: volcanQ2OptCubierto,
+          opciones: [
+            { label: 'Depósito abierto', image: volcanQ2OptAbierto },
+            { label: 'Cubierto', image: volcanQ2OptCubierto },
+            { label: 'Desbordado', image: volcanQ2OptDesbordado }
+          ]
+        }
+      },
+      {
+        pregunta: 'Si usas lentes de contacto, ¿qué es mejor usar hoy?',
+        opciones: ['Lentes de contacto', 'Gafas de sol', 'Gafas de protección'],
+        correcta: 2,
+        arrastrar: {
+          imagenBase: volcanQ3Base,
+          imagenCorrecta: volcanQ3Correcta,
+          opciones: [
+            { label: 'Lentes de contacto', image: volcanQ3OptLentesContacto },
+            { label: 'Gafas de sol', image: volcanQ3OptGafasSol },
+            { label: 'Gafas de protección', image: volcanQ3OptGafasProteccion }
+          ]
+        }
+      }
     ],
     inundacion: [
       { pregunta: 'Si el agua entra en casa, ¿qué desconectas primero?', opciones: ['La radio', 'La energía eléctrica', 'La televisión'], correcta: 1 },
