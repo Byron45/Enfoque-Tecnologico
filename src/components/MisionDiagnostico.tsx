@@ -10,12 +10,13 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import misionDiagnosticoHeroUrl from '../assets/mision-diagnostico-hero.webp';
 import GuideAssistant from './GuideAssistant';
 import MissionVisualPanel from './MissionVisualPanel';
 import Quiz from './Quiz';
 import { GUIDE_STEPS } from '../utils/guideSteps';
 
-const MISSION_IMAGE_URL = '';
+const MISSION_IMAGE_URL = misionDiagnosticoHeroUrl;
 
 const MisionDiagnostico = () => {
   const navigate = useNavigate();

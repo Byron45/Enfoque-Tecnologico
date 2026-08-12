@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Award, Download, X } from 'lucide-react';
-import brandLogoUrl from '../assets/logo-agentes-prevencion.png';
+import certificadoTemplateUrl from '../assets/certificado-aprobacion-template.jpg';
 
 type Props = {
   open: boolean;
@@ -10,7 +10,10 @@ type Props = {
   institucion: string;
 };
 
-const DEDICATORIA = 'Por completar con valentía y responsabilidad todas las misiones de prevención, aprendiendo a proteger su vida, su familia y su comunidad ante cualquier emergencia.';
+const CANVAS_WIDTH = 1772;
+const CANVAS_HEIGHT = 1241;
+const PDF_WIDTH = 850.5;
+const PDF_HEIGHT = 595.5;
 
 const loadImage = (src: string) => new Promise<HTMLImageElement>((resolve, reject) => {
   const img = new Image();
@@ -19,32 +22,59 @@ const loadImage = (src: string) => new Promise<HTMLImageElement>((resolve, rejec
   img.src = src;
 });
 
-const roundRect = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) => {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r);
-  ctx.arcTo(x, y, x + w, y, r);
-  ctx.closePath();
+const fitFontSize = (
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+  startSize: number,
+  minSize: number
+) => {
+  let size = startSize;
+  while (size > minSize) {
+    ctx.font = `italic 800 ${size}px "Segoe UI", Arial, sans-serif`;
+    if (ctx.measureText(text).width <= maxWidth) return size;
+    size -= 2;
+  }
+  return minSize;
 };
 
-const wrapText = (ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
-  const words = text.split(' ');
-  let line = '';
-  let cursorY = y;
-
-  for (const word of words) {
-    const testLine = line ? `${line} ${word}` : word;
-    if (ctx.measureText(testLine).width > maxWidth && line) {
-      ctx.fillText(line, x, cursorY);
-      line = word;
-      cursorY += lineHeight;
-    } else {
-      line = testLine;
-    }
+const binaryStringToUint8Array = (value: string) => {
+  const bytes = new Uint8Array(value.length);
+  for (let index = 0; index < value.length; index += 1) {
+    bytes[index] = value.charCodeAt(index) & 0xff;
   }
-  if (line) ctx.fillText(line, x, cursorY);
+  return bytes;
+};
+
+const canvasToPdfBlob = (canvas: HTMLCanvasElement) => {
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+  const imageBinary = atob(dataUrl.split(',')[1] || '');
+  const objects: string[] = [];
+  const offsets: number[] = [];
+  let body = '%PDF-1.4\n%\xFF\xFF\xFF\xFF\n';
+
+  const addObject = (content: string) => {
+    offsets.push(body.length);
+    body += `${objects.length + 1} 0 obj\n${content}\nendobj\n`;
+    objects.push(content);
+  };
+
+  addObject('<< /Type /Catalog /Pages 2 0 R >>');
+  addObject('<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+  addObject(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PDF_WIDTH} ${PDF_HEIGHT}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`);
+  addObject(`<< /Type /XObject /Subtype /Image /Width ${canvas.width} /Height ${canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imageBinary.length} >>\nstream\n${imageBinary}\nendstream`);
+
+  const contentStream = `q\n${PDF_WIDTH} 0 0 ${PDF_HEIGHT} 0 0 cm\n/Im0 Do\nQ`;
+  addObject(`<< /Length ${contentStream.length} >>\nstream\n${contentStream}\nendstream`);
+
+  const xrefStart = body.length;
+  body += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  offsets.forEach((offset) => {
+    body += `${String(offset).padStart(10, '0')} 00000 n \n`;
+  });
+  body += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF`;
+
+  return new Blob([binaryStringToUint8Array(body)], { type: 'application/pdf' });
 };
 
 const CertificateModal = ({ open, onClose, nombre, institucion }: Props) => {
@@ -61,109 +91,80 @@ const CertificateModal = ({ open, onClose, nombre, institucion }: Props) => {
       const ctx = canvas?.getContext('2d');
       if (!canvas || !ctx) return;
 
-      const W = canvas.width;
-      const H = canvas.height;
-      const margin = 40;
+      const template = await loadImage(certificadoTemplateUrl);
+      if (cancelled) return;
 
-      const gradient = ctx.createLinearGradient(0, 0, W, H);
-      gradient.addColorStop(0, '#0B4BB3');
-      gradient.addColorStop(1, '#071D4A');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, W, H);
+      ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      ctx.drawImage(template, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-      ctx.fillStyle = '#F7FAFF';
-      roundRect(ctx, margin, margin, W - margin * 2, H - margin * 2, 28);
-      ctx.fill();
-
-      ctx.strokeStyle = '#FACC15';
-      ctx.lineWidth = 6;
-      roundRect(ctx, margin + 16, margin + 16, W - margin * 2 - 32, H - margin * 2 - 32, 20);
-      ctx.stroke();
-
-      try {
-        const logo = await loadImage(brandLogoUrl);
-        if (cancelled) return;
-        const logoSize = 130;
-        const logoY = margin + 96;
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(W / 2, logoY, logoSize / 2, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.clip();
-        ctx.drawImage(logo, W / 2 - logoSize / 2, logoY - logoSize / 2, logoSize, logoSize);
-        ctx.restore();
-        ctx.strokeStyle = '#0B4BB3';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(W / 2, logoY, logoSize / 2, 0, Math.PI * 2);
-        ctx.stroke();
-      } catch {
-        // el logo es decorativo; si falla la carga, seguimos sin él
-      }
+      const displayName = (nombre || 'Agente de Prevencion').trim();
+      const date = new Date().toLocaleDateString('es-EC', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
 
       ctx.textAlign = 'center';
-      ctx.fillStyle = '#071D4A';
-      ctx.font = '900 44px "Segoe UI", system-ui, sans-serif';
-      ctx.fillText('CERTIFICADO', W / 2, margin + 250);
+      ctx.textBaseline = 'middle';
 
-      ctx.fillStyle = '#EA580C';
-      ctx.font = '900 26px "Segoe UI", system-ui, sans-serif';
-      ctx.fillText('AGENTE DE PREVENCIÓN', W / 2, margin + 288);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(505, 545, 770, 98);
+      const nameFontSize = fitFontSize(ctx, displayName, 720, 70, 38);
+      ctx.font = `italic 800 ${nameFontSize}px "Segoe UI", Arial, sans-serif`;
+      ctx.fillStyle = '#050505';
+      ctx.fillText(displayName, CANVAS_WIDTH / 2, 603);
 
-      ctx.fillStyle = '#475569';
-      ctx.font = '700 20px "Segoe UI", system-ui, sans-serif';
-      ctx.fillText('Se otorga el presente reconocimiento a:', W / 2, margin + 336);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(650, 955, 470, 70);
+      ctx.font = '400 40px "Segoe UI", Arial, sans-serif';
+      ctx.fillStyle = '#050505';
+      ctx.fillText(date, CANVAS_WIDTH / 2, 995);
 
-      ctx.fillStyle = '#0B4BB3';
-      ctx.font = '900 52px "Segoe UI", system-ui, sans-serif';
-      ctx.fillText((nombre || 'Agente').toUpperCase(), W / 2, margin + 402);
-
-      ctx.fillStyle = '#64748B';
-      ctx.font = '700 20px "Segoe UI", system-ui, sans-serif';
-      ctx.fillText(institucion || 'Distrito 18D03', W / 2, margin + 436);
-
-      ctx.fillStyle = '#334155';
-      ctx.font = 'italic 500 19px "Segoe UI", system-ui, sans-serif';
-      wrapText(ctx, DEDICATORIA, W / 2, margin + 494, W - margin * 2 - 200, 28);
-
-      const fecha = new Date().toLocaleDateString('es-EC', { day: 'numeric', month: 'long', year: 'numeric' });
-      ctx.fillStyle = '#94A3B8';
-      ctx.font = '700 15px "Segoe UI", system-ui, sans-serif';
-      ctx.fillText(`Distrito 18D03 · ${fecha}`, W / 2, H - margin - 36);
+      if (institucion) {
+        ctx.font = '600 26px "Segoe UI", Arial, sans-serif';
+        ctx.fillStyle = '#334155';
+        ctx.fillText(institucion, CANVAS_WIDTH / 2, 673);
+      }
 
       if (!cancelled) setReady(true);
     };
 
     draw();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [open, nombre, institucion]);
 
   const descargar = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    const pdfBlob = canvasToPdfBlob(canvas);
+    const url = URL.createObjectURL(pdfBlob);
     const link = document.createElement('a');
-    link.download = `certificado-${(nombre || 'agente').toLowerCase().replace(/\s+/g, '-')}.png`;
-    link.href = canvas.toDataURL('image/png');
+    link.download = `certificado-${(nombre || 'agente').toLowerCase().replace(/\s+/g, '-')}.pdf`;
+    link.href = url;
     link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   return (
     <AnimatePresence>
       {open && (
         <motion.div className="fixed inset-0 z-[130] flex items-center justify-center bg-[#071D4A]/85 p-4 backdrop-blur-lg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          <motion.section initial={{ y: 24, scale: .96 }} animate={{ y: 0, scale: 1 }} exit={{ y: 16, scale: .96 }} className="relative w-full max-w-2xl rounded-[2.2rem] border-4 border-white bg-white p-5 shadow-2xl md:p-6">
+          <motion.section initial={{ y: 24, scale: .96 }} animate={{ y: 0, scale: 1 }} exit={{ y: 16, scale: .96 }} className="relative w-full max-w-3xl rounded-[2.2rem] border-4 border-white bg-white p-5 shadow-2xl md:p-6">
             <button onClick={onClose} className="absolute right-4 top-4 z-10 rounded-full bg-rose-500 p-2.5 text-white shadow-lg hover:bg-rose-400" aria-label="Cerrar"><X size={18} /></button>
 
             <div className="mb-4 flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-yellow-100 text-yellow-700"><Award size={26} /></div>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[.2em] text-yellow-600">¡Felicidades, agente!</p>
-                <h3 className="text-xl font-black text-slate-900 md:text-2xl">Tu certificado está listo</h3>
+                <p className="text-[10px] font-black uppercase tracking-[.2em] text-yellow-600">Felicidades, agente</p>
+                <h3 className="text-xl font-black text-slate-900 md:text-2xl">Tu certificado PDF esta listo</h3>
               </div>
             </div>
 
             <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
-              <canvas ref={canvasRef} width={1600} height={1100} className="h-auto w-full" />
+              <canvas ref={canvasRef} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} className="h-auto w-full" />
             </div>
 
             <button
@@ -172,7 +173,7 @@ const CertificateModal = ({ open, onClose, nombre, institucion }: Props) => {
               disabled={!ready}
               className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-500 px-5 py-4 text-sm font-black uppercase tracking-wider text-white shadow-lg transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {ready ? 'Descargar certificado' : 'Preparando certificado...'} <Download size={18} />
+              {ready ? 'Descargar certificado PDF' : 'Preparando certificado...'} <Download size={18} />
             </button>
           </motion.section>
         </motion.div>

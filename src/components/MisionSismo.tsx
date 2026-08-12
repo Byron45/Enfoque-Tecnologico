@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import misionSismoHeroUrl from '../assets/mision-sismo-hero.jpg';
+import misionSismoHeroUrl from '../assets/mision-sismo-hero.webp';
 import GuideAssistant from './GuideAssistant';
 import MissionVisualPanel from './MissionVisualPanel';
 import Quiz from './Quiz';

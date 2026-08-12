@@ -15,12 +15,13 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import misionEvacuacionHeroUrl from '../assets/mision-evacuacion-hero.webp';
 import GuideAssistant from './GuideAssistant';
 import MissionVisualPanel from './MissionVisualPanel';
 import Quiz from './Quiz';
 import { GUIDE_STEPS } from '../utils/guideSteps';
 
-const MISSION_IMAGE_URL = '';
+const MISSION_IMAGE_URL = misionEvacuacionHeroUrl;
 
 const MisionEvacuacion = () => {
   const navigate = useNavigate();
