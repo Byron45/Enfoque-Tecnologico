@@ -131,7 +131,7 @@ const MisionDiagnostico = () => {
               imageUrl={MISSION_IMAGE_URL}
               missionLabel="Misión 01"
               title="¿Qué tanto sabes?"
-              description="Antes de comenzar tus misiones, cuéntanos qué sabes sobre volcanes, inundaciones, sismos y evacuación."
+              description="Antes de comenzar tus misiones, queremos saber qué tanto conoces sobre Gestión de Riesgos: amenazas, vulnerabilidad, prevención, resiliencia y más conceptos clave que todo Agente de Prevención debe dominar."
               accentTextClass="text-indigo-300"
               accentBgClass="from-indigo-950 via-violet-950 to-slate-950"
               icon={<ClipboardCheck size={16} />}
@@ -160,7 +160,7 @@ const MisionDiagnostico = () => {
                 <span className="text-[9px] font-black uppercase tracking-[0.28em]">Objetivo</span>
               </div>
               <p className="text-sm text-white/75 font-semibold leading-relaxed">
-                Responde las 5 preguntas y sube al Nivel 2 para desbloquear tu primera misión.
+                Responde las 10 preguntas sobre conceptos de Gestión de Riesgos y sube al Nivel 2 para desbloquear tu primera misión.
               </p>
             </div>
 

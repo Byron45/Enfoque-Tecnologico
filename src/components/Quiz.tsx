@@ -35,12 +35,18 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
 
   const preguntas: Record<string, Question[]> = {
     diagnostico: [
-      { pregunta: '¿Qué es un desastre natural?', opciones: ['Un fenómeno que la naturaleza controla siempre', 'Un fenómeno natural que afecta a las personas cuando no están preparadas', 'Algo que solo pasa en las películas'], correcta: 1 },
-      { pregunta: '¿Cuál de estos fenómenos está relacionado con un volcán?', opciones: ['Ceniza volcánica', 'Marea alta', 'Viento fuerte'], correcta: 0 },
-      { pregunta: '¿Qué debes tener siempre lista para una emergencia?', opciones: ['Una mochila de emergencia', 'Muchos juguetes', 'Nada, no hace falta'], correcta: 0 },
-      { pregunta: '¿A quién debes llamar en una emergencia real?', opciones: ['A tus amigos', 'Al ECU 911', 'A nadie'], correcta: 1 },
-      { pregunta: '¿Por qué es importante conocer las zonas seguras de tu comunidad?', opciones: ['Para saber a dónde ir si hay una emergencia', 'Para presumir que las conoces', 'No es importante'], correcta: 0 }
+      { pregunta: 'En Gestión de Riesgos, ¿qué significa la palabra "Amenaza"?', opciones: ['El miedo que sentimos cuando empieza a temblar la tierra o llueve fuerte.', 'Un fenómeno o peligro en nuestro entorno (como un volcán activo o lluvias fuertes) que podría causarnos daño.', 'Un castigo de la naturaleza porque no cuidamos el planeta.'], correcta: 1 },
+      { pregunta: '¿Qué significa ser "Vulnerables" ante un desastre?', opciones: ['Ser personas muy fuertes y saber exactamente qué hacer en una emergencia.', 'Vivir muy lejos de los volcanes o los ríos, donde nunca pasa nada.', 'Estar expuestos a un peligro y no estar preparados o protegidos para enfrentarlo.'], correcta: 2 },
+      { pregunta: 'Si sumamos una "Amenaza" (como el volcán Tungurahua) y nuestra "Vulnerabilidad" (no estar preparados), ¿qué obtenemos?', opciones: ['Un "Riesgo" muy alto de sufrir daños o salir lastimados.', 'Una zona completamente segura.', 'Un evento divertido al que no debemos prestarle atención.'], correcta: 0 },
+      { pregunta: '¿A qué llamamos verdaderamente un "Desastre"?', opciones: ['A cualquier lluvia fuerte o viento que ocurre en la naturaleza.', 'Cuando un fenómeno natural causa muchos daños, pérdidas o heridos porque las personas no estaban preparadas.', 'Cuando se va la luz en la escuela por un ratito.'], correcta: 1 },
+      { pregunta: '¿Qué es la "Prevención" de riesgos?', opciones: ['Correr muy rápido sin mirar atrás cuando suena una alarma.', 'Esperar a que pase el desastre para recién pedir ayuda a los bomberos.', 'Aprender, prepararnos y tomar acciones antes de que ocurra una emergencia para evitar daños.'], correcta: 2 },
+      { pregunta: '¿Qué significa que tu escuela o tu comunidad sea "Resiliente"?', opciones: ['Que tiene la capacidad de resistir, adaptarse y recuperarse rápido después de una emergencia.', 'Que nunca le va a pasar nada malo porque tiene mucha suerte.', 'Que tiene paredes de metal muy gruesas que no se rompen con nada.'], correcta: 0 },
+      { pregunta: '¿Para qué sirve un "Sistema de Alerta Temprana" (SAT)?', opciones: ['Para que la escuela nos despierte temprano todos los días.', 'Para avisarnos a tiempo que un peligro se acerca y darnos la oportunidad de protegernos.', 'Para escuchar música muy fuerte en los parques de la ciudad.'], correcta: 1 },
+      { pregunta: '¿Cuál es la diferencia más importante entre una "Urgencia" y una "Emergencia"?', opciones: ['En la emergencia la vida de alguien está en peligro y hay que actuar ya, en la urgencia hay tiempo para ir al médico sin riesgo de morir.', 'Son exactamente lo mismo, solo son palabras diferentes para llamar al ECU 911.', 'La urgencia es cuando te duele un poquito la cabeza y la emergencia es cuando tienes hambre.'], correcta: 0 },
+      { pregunta: '¿Cómo se define una "Zona Segura"?', opciones: ['Un lugar cerrado donde hay muchos juguetes y fundas de comida.', 'Cualquier lugar de la calle donde esté parado un policía.', 'Un lugar evaluado previamente donde no hay peligro de que nos caigan objetos, nos alcance el agua o los deslaves.'], correcta: 2 },
+      { pregunta: 'Tener una buena "Percepción del Riesgo" significa:', opciones: ['Pensar que nunca va a pasar nada malo en Baños porque tenemos suerte.', 'Darnos cuenta de los peligros reales que nos rodean todos los días para poder cuidarnos mejor de forma inteligente.', 'Tenerle muchísimo miedo a la naturaleza y no querer salir de casa nunca.'], correcta: 1 }
     ],
+
     volcan: [
       {
         pregunta: '¿Qué debes usar para proteger tus pulmones de la ceniza?',

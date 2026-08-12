@@ -67,15 +67,15 @@ export const GUIDE_STEPS: Record<string, GuideStep[]> = {
   'mision-diagnostico': [
     {
       title: 'Diagnóstico inicial',
-      text: 'Antes de comenzar tus misiones, queremos saber qué tanto sabes sobre desastres naturales.'
+      text: '¡Hola, agente! Antes de salir a tus misiones, vamos a descubrir qué tanto sabes sobre Gestión de Riesgos: amenazas, vulnerabilidad, prevención y más.'
     },
     {
       title: 'Sin apuros',
-      text: 'No necesitas prepararte, solo responde con lo que ya sabes. Si te equivocas, puedes intentarlo de nuevo.'
+      text: 'No necesitas prepararte, solo responde con lo que ya sabes. Si te equivocas, puedes volver a intentarlo sin perder tu avance.'
     },
     {
       title: 'Responde la evaluación',
-      text: 'Toca "Iniciar evaluación" y responde las 5 preguntas para desbloquear tu primera misión.'
+      text: 'Toca "Iniciar evaluación" y responde las 10 preguntas para desbloquear tu primera misión. ¡Tú puedes!'
     }
   ],
   'mision-volcan': [
