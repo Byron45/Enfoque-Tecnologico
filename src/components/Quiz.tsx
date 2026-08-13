@@ -8,14 +8,19 @@ import volcanQ1Correcta from '../assets/quiz/volcan-q1-correcta.webp';
 import volcanQ1Mascarilla from '../assets/quiz/volcan-q1-opt-mascarilla.webp';
 import volcanQ1Bufanda from '../assets/quiz/volcan-q1-opt-bufanda.webp';
 import volcanQ1Gorra from '../assets/quiz/volcan-q1-opt-gorra.webp';
-import volcanQ2OptAbierto from '../assets/quiz/volcan-q2-opt-abierto.png';
-import volcanQ2OptCubierto from '../assets/quiz/volcan-q2-opt-cubierto.png';
-import volcanQ2OptDesbordado from '../assets/quiz/volcan-q2-opt-desbordado.png';
-import volcanQ3Base from '../assets/quiz/volcan-q3-base.png';
-import volcanQ3Correcta from '../assets/quiz/volcan-q3-correcta.png';
-import volcanQ3OptGafasProteccion from '../assets/quiz/volcan-q3-opt-gafas-proteccion.png';
-import volcanQ3OptLentesContacto from '../assets/quiz/volcan-q3-opt-lentes-contacto.png';
-import volcanQ3OptGafasSol from '../assets/quiz/volcan-q3-opt-gafas-sol.png';
+import volcanQ2OptAbierto from '../assets/quiz/volcan-q2-opt-abierto.webp';
+import volcanQ2OptCubierto from '../assets/quiz/volcan-q2-opt-cubierto.webp';
+import volcanQ2OptDesbordado from '../assets/quiz/volcan-q2-opt-desbordado.webp';
+import volcanQ3Base from '../assets/quiz/volcan-q3-base.webp';
+import volcanQ3Correcta from '../assets/quiz/volcan-q3-correcta.webp';
+import volcanQ3OptGafasProteccion from '../assets/quiz/volcan-q3-opt-gafas-proteccion.webp';
+import volcanQ3OptLentesContacto from '../assets/quiz/volcan-q3-opt-lentes-contacto.webp';
+import volcanQ3OptGafasSol from '../assets/quiz/volcan-q3-opt-gafas-sol.webp';
+
+interface ImageOption {
+  label: string;
+  image: string;
+}
 
 interface Question {
   pregunta: string;
@@ -26,6 +31,7 @@ interface Question {
     imagenCorrecta: string;
     opciones: DragOption[];
   };
+  opcionesImagen?: ImageOption[];
 }
 
 interface QuizProps {
@@ -74,15 +80,11 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
         pregunta: '¿Qué debes hacer con los depósitos de agua en casa?',
         opciones: ['Dejarlos abiertos', 'Cubrirlos muy bien', 'Vaciarlos todos'],
         correcta: 1,
-        arrastrar: {
-          imagenBase: '',
-          imagenCorrecta: volcanQ2OptCubierto,
-          opciones: [
-            { label: 'Depósito abierto', image: volcanQ2OptAbierto },
-            { label: 'Cubierto', image: volcanQ2OptCubierto },
-            { label: 'Desbordado', image: volcanQ2OptDesbordado }
-          ]
-        }
+        opcionesImagen: [
+          { label: 'Dejarlos abiertos', image: volcanQ2OptAbierto },
+          { label: 'Cubrirlos muy bien', image: volcanQ2OptCubierto },
+          { label: 'Vaciarlos todos', image: volcanQ2OptDesbordado }
+        ]
       },
       {
         pregunta: 'Si usas lentes de contacto, ¿qué es mejor usar hoy?',
@@ -238,7 +240,54 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
               {actualQuestions[step].pregunta}
             </h2>
 
-            {actualQuestions[step].arrastrar ? (
+            {actualQuestions[step].opcionesImagen ? (
+              <div className="grid grid-cols-3 gap-4 mb-8">
+                {actualQuestions[step].opcionesImagen!.map((opImg, index) => {
+                  const isSelected = selected === index;
+                  const isCorrect = isSelected && status === 'correct';
+                  const isWrong = isSelected && status === 'wrong';
+
+                  return (
+                    <motion.button
+                      key={opImg.label}
+                      onClick={() => handleSelect(index)}
+                      disabled={status !== 'idle'}
+                      whileHover={status === 'idle' ? { scale: 1.05 } : {}}
+                      whileTap={status === 'idle' ? { scale: 0.97 } : {}}
+                      animate={isWrong ? { x: [0, -6, 6, -6, 6, 0] } : { x: 0 }}
+                      transition={isWrong ? { duration: 0.4 } : undefined}
+                      className={`relative flex flex-col items-center gap-2 rounded-2xl border-3 p-3 transition-all ${
+                        isCorrect
+                          ? 'border-emerald-400 bg-emerald-500/20 shadow-[0_0_24px_rgba(16,185,129,0.4)]'
+                          : isWrong
+                            ? 'border-red-400 bg-red-500/20'
+                            : 'border-white/15 bg-white/5 hover:border-white/30 hover:bg-white/10'
+                      }`}
+                    >
+                      <img
+                        src={opImg.image}
+                        alt={opImg.label}
+                        className="h-28 w-28 object-contain md:h-36 md:w-36"
+                        draggable={false}
+                      />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white/70">
+                        {opImg.label}
+                      </span>
+                      {isCorrect && (
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -right-2 -top-2 rounded-full bg-emerald-500 p-1.5 text-white shadow-lg">
+                          <CheckCircle2 size={18} />
+                        </motion.div>
+                      )}
+                      {isWrong && (
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1.5 text-white shadow-lg">
+                          <XCircle size={18} />
+                        </motion.div>
+                      )}
+                    </motion.button>
+                  );
+                })}
+              </div>
+            ) : actualQuestions[step].arrastrar ? (
               <div className="mb-8">
                 <DragDropQuestion
                   imagenBase={actualQuestions[step].arrastrar!.imagenBase}

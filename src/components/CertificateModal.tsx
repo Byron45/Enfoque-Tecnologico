@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Award, Download, X } from 'lucide-react';
-import certificadoTemplateUrl from '../assets/certificado-aprobacion-template.jpg';
+import certificadoTemplateUrl from '../assets/certificado-aprobacion-template.webp';
 
 type Props = {
   open: boolean;
@@ -121,9 +121,11 @@ const CertificateModal = ({ open, onClose, nombre, institucion }: Props) => {
       ctx.fillText(date, CANVAS_WIDTH / 2, 995);
 
       if (institucion) {
-        ctx.font = '600 26px "Segoe UI", Arial, sans-serif';
-        ctx.fillStyle = '#334155';
-        ctx.fillText(institucion, CANVAS_WIDTH / 2, 673);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(505, 660, 770, 55);
+        ctx.font = '600 32px "Segoe UI", Arial, sans-serif';
+        ctx.fillStyle = '#050505';
+        ctx.fillText(institucion, CANVAS_WIDTH / 2, 693);
       }
 
       if (!cancelled) setReady(true);
