@@ -10,8 +10,8 @@ type Props = {
   institucion: string;
 };
 
-const CANVAS_WIDTH = 1772;
-const CANVAS_HEIGHT = 1241;
+const CANVAS_WIDTH = 2552;
+const CANVAS_HEIGHT = 1787;
 const PDF_WIDTH = 850.5;
 const PDF_HEIGHT = 595.5;
 
@@ -31,7 +31,7 @@ const fitFontSize = (
 ) => {
   let size = startSize;
   while (size > minSize) {
-    ctx.font = `italic 800 ${size}px "Segoe UI", Arial, sans-serif`;
+    ctx.font = `bold italic ${size}px Arial, sans-serif`;
     if (ctx.measureText(text).width <= maxWidth) return size;
     size -= 2;
   }
@@ -107,26 +107,29 @@ const CertificateModal = ({ open, onClose, nombre, institucion }: Props) => {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
+      /* --- Student name: replaces 'Insertar Nombre' (big, bold italic) --- */
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(505, 545, 770, 98);
-      const nameFontSize = fitFontSize(ctx, displayName, 720, 70, 38);
-      ctx.font = `italic 800 ${nameFontSize}px "Segoe UI", Arial, sans-serif`;
+      ctx.fillRect(600, 620, 1350, 120);
+      const nameFontSize = fitFontSize(ctx, displayName, 1200, 95, 48);
+      ctx.font = `bold italic ${nameFontSize}px Arial, sans-serif`;
       ctx.fillStyle = '#050505';
-      ctx.fillText(displayName, CANVAS_WIDTH / 2, 603);
+      ctx.fillText(displayName, CANVAS_WIDTH / 2, 690);
 
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(650, 955, 470, 70);
-      ctx.font = '400 40px "Segoe UI", Arial, sans-serif';
-      ctx.fillStyle = '#050505';
-      ctx.fillText(date, CANVAS_WIDTH / 2, 995);
-
+      /* --- Institution: replaces 'Insertar Nombre' in 'estudiante de ...' line --- */
       if (institucion) {
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(505, 660, 770, 55);
-        ctx.font = '600 32px "Segoe UI", Arial, sans-serif';
+        ctx.fillRect(780, 810, 1000, 50);
+        ctx.font = 'italic 36px Arial, sans-serif';
         ctx.fillStyle = '#050505';
-        ctx.fillText(institucion, CANVAS_WIDTH / 2, 693);
+        ctx.fillText(institucion, CANVAS_WIDTH / 2, 838);
       }
+
+      /* --- Date: replaces 'Insertar fecha' at the bottom --- */
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(750, 1500, 1050, 55);
+      ctx.font = '400 36px Arial, sans-serif';
+      ctx.fillStyle = '#050505';
+      ctx.fillText(date, CANVAS_WIDTH / 2, 1530);
 
       if (!cancelled) setReady(true);
     };
