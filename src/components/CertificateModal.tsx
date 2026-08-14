@@ -169,8 +169,10 @@ const CertificateModal = ({ open, onClose, nombre, institucion }: Props) => {
       const heroH = 440;
       const ninAR = heroina.width / heroina.height;
       const ninOAR = heroe.width / heroe.height;
-      ctx.drawImage(heroina, 100, H - heroH - 50, ninAR * heroH, heroH);
-      ctx.drawImage(heroe, W - ninOAR * heroH - 100, H - heroH - 50, ninOAR * heroH, heroH);
+      const heroesYOffset = 180; 
+      const heroesXPadding = 275;
+      ctx.drawImage(heroina, heroesXPadding, H - heroH - heroesYOffset, ninAR * heroH, heroH);
+      ctx.drawImage(heroe, W - ninOAR * heroH - heroesXPadding, H - heroH - heroesYOffset, ninOAR * heroH, heroH);
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -205,10 +207,11 @@ const CertificateModal = ({ open, onClose, nombre, institucion }: Props) => {
       y += 130;
 
       const nameSize = fitFont(ctx, displayName, 1900, 150, 70, 'bold italic');
-      ctx.font = `bold italic ${nameSize}px Arial, Helvetica, sans-serif`;
+      const adjustedNameSize = Math.max(nameSize - 10, 60);
+      ctx.font = `bold italic ${adjustedNameSize}px Arial, Helvetica, sans-serif`;
       ctx.fillStyle = '#050505';
       ctx.fillText(displayName, FULL_CX, y);
-      y += nameSize * 0.55 + 50;
+      y += adjustedNameSize * 0.55 + 50;
 
       drawSeparator(ctx, y, 1000);
       y += 90;
