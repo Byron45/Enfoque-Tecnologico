@@ -77,7 +77,7 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
         }
       },
       {
-        pregunta: '¿Qué debes hacer con los depósitos de agua en casa?',
+        pregunta: '¿Si el volcán Tungurahua erupciona, que debes hacer con los depósitos de agua en casa?',
         opciones: ['Dejarlos abiertos', 'Cubrirlos muy bien', 'Vaciarlos todos'],
         correcta: 1,
         opcionesImagen: [
@@ -87,7 +87,7 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
         ]
       },
       {
-        pregunta: 'Si usas lentes de contacto, ¿qué es mejor usar hoy?',
+        pregunta: '¿Qué elemento debes usar para proteger tus ojos y mantener la visibilidad frente a la caída de ceniza?',
         opciones: ['Lentes de contacto', 'Gafas de sol', 'Gafas de protección'],
         correcta: 2,
         arrastrar: {
@@ -132,10 +132,12 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
       evacuacion: 'mision_evacuacion'
     } as const;
 
-    const nuevoNivel = niveles[tipo];
+    const nivelSugerido = niveles[tipo];
     const campoMision = camposMision[tipo];
     const nombreGuardado = localStorage.getItem('agenteNombre');
     const registroId = localStorage.getItem('agenteRegistroId');
+    const nivelActual = Number(localStorage.getItem('agenteNivel') || '1');
+    const nuevoNivel = Math.max(nivelActual, nivelSugerido);
 
     localStorage.setItem('agenteNivel', nuevoNivel.toString());
     localStorage.setItem(`mision${tipo.charAt(0).toUpperCase()}${tipo.slice(1)}Completada`, 'true');

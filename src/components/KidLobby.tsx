@@ -16,6 +16,9 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import brandLogoUrl from '../assets/logo-agentes-prevencion.png';
+import chico1 from '../assets/avatars/chico-1.webp';
+import chica1 from '../assets/avatars/chica-1.webp';
+
 import GuideAssistant from './GuideAssistant';
 import { supabase, isSupabaseConfigured } from '../supabaseClient';
 import { GUIDE_STEPS } from '../utils/guideSteps';
@@ -33,8 +36,8 @@ type AgenteMatch = {
 const LOGO_URL = brandLogoUrl;
 
 const AVATARS = {
-  chica: 'https://blogger.googleusercontent.com/img/a/AVvXsEh_PnIcFYcgmsvgfKqk4Mr0s40x0a5f1_pIFmBRlR0oVInL1-uaLQIez5BrYNp-ua4-mBmHqb2A8Ox4tElSIJx3LtHnBaO-cGTxzHomjYO1f2X6KQzCYn8I0LmpqNe6o1UiXhc814JjCv0hWJ3kME5gcDJ1czrxl7xYge9BE214gnYyrIHHqxwuTMyoxPjd',
-  chico: 'https://blogger.googleusercontent.com/img/a/AVvXsEhGuah8gRxjKHRH2XeN_K7ew3dlo-4QNWudy46AsoT91CiPXkrU9JDEA1wQ1iyIcYj23qQGhITb2EJpIMP1bww_g24vx1-yYp6dYz1agR_nWX6pazjghCNOXXKGvdI0nzDG173acHzltH-fCPlxYYkVQhA47V7aFNiZmVH4HAZf8OTIqtiu0DiI7SIOd5Qe'
+  chica: chica1,
+  chico: chico1
 };
 
 const ESCUELAS = [
@@ -289,10 +292,11 @@ const KidLobby = () => {
                 <div className="grid grid-cols-2 gap-3">
                   {(['chica', 'chico'] as const).map((kind) => {
                     const selected = avatar === kind;
+                    const avatarSrc = kind === 'chica' ? chica1 : chico1;
                     return (
                       <button key={kind} type="button" onClick={() => setAvatar(kind)} className={`relative rounded-[1.5rem] border-3 p-3 transition hover:-translate-y-1 ${selected ? (kind === 'chica' ? 'border-pink-500 bg-pink-50 shadow-lg' : 'border-blue-500 bg-blue-50 shadow-lg') : 'border-slate-200 bg-slate-50'}`}>
                         {selected && <CheckCircle2 className="absolute right-3 top-3 text-emerald-500" size={22} />}
-                        <img src={AVATARS[kind]} alt={kind === 'chica' ? 'Avatar niña' : 'Avatar niño'} className="mx-auto h-24 w-24 rounded-full border-4 border-white bg-white object-cover shadow-md md:h-28 md:w-28" />
+                        <img src={avatarSrc} alt={kind === 'chica' ? 'Avatar niña' : 'Avatar niño'} className="mx-auto h-24 w-24 rounded-full border-4 border-white bg-white object-cover shadow-md md:h-28 md:w-28" />
                         <p className="mt-2 text-sm font-black uppercase text-slate-800">{kind === 'chica' ? 'Niña' : 'Niño'}</p>
                       </button>
                     );

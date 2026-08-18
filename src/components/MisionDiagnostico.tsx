@@ -37,7 +37,9 @@ const MisionDiagnostico = () => {
       return;
     }
 
-    localStorage.setItem('agenteNivel', '2');
+    const nivelActual = Number(localStorage.getItem('agenteNivel') || '1');
+    const nuevoNivel = Math.max(nivelActual, 2);
+    localStorage.setItem('agenteNivel', nuevoNivel.toString());
     localStorage.setItem('misionDiagnosticoCompletada', 'true');
     window.dispatchEvent(new Event('agenteNivelActualizado'));
 
@@ -47,7 +49,7 @@ const MisionDiagnostico = () => {
         .from('agentes')
         .update({
           mision_diagnostico: true,
-          nivel: 2,
+          nivel: nuevoNivel,
           ultima_conexion: new Date().toISOString()
         });
 

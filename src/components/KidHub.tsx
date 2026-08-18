@@ -25,11 +25,27 @@ import GuideAssistant from './GuideAssistant';
 import SuggestionBox from './SuggestionBox';
 import { GUIDE_STEPS } from '../utils/guideSteps';
 
+import chico1 from '../assets/avatars/chico-1.webp';
+import chico2 from '../assets/avatars/chico-2.webp';
+import chico3 from '../assets/avatars/chico-3.webp';
+import chico4 from '../assets/avatars/chico-4.webp';
+import chico5 from '../assets/avatars/chico-5.webp';
+import chico6 from '../assets/avatars/chico-6.webp';
+import chico7 from '../assets/avatars/chico-7.webp';
+
+import chica1 from '../assets/avatars/chica-1.webp';
+import chica2 from '../assets/avatars/chica-2.webp';
+import chica3 from '../assets/avatars/chica-3.webp';
+import chica4 from '../assets/avatars/chica-4.webp';
+import chica5 from '../assets/avatars/chica-5.webp';
+import chica6 from '../assets/avatars/chica-6.webp';
+import chica7 from '../assets/avatars/chica-7.webp';
+
 const LOGO_URL = brandLogoUrl;
 
-const AVATARS = {
-  chica: 'https://blogger.googleusercontent.com/img/a/AVvXsEh_PnIcFYcgmsvgfKqk4Mr0s40x0a5f1_pIFmBRlR0oVInL1-uaLQIez5BrYNp-ua4-mBmHqb2A8Ox4tElSIJx3LtHnBaO-cGTxzHomjYO1f2X6KQzCYn8I0LmpqNe6o1UiXhc814JjCv0hWJ3kME5gcDJ1czrxl7xYge9BE214gnYyrIHHqxwuTMyoxPjd',
-  chico: 'https://blogger.googleusercontent.com/img/a/AVvXsEhGuah8gRxjKHRH2XeN_K7ew3dlo-4QNWudy46AsoT91CiPXkrU9JDEA1wQ1iyIcYj23qQGhITb2EJpIMP1bww_g24vx1-yYp6dYz1agR_nWX6pazjghCNOXXKGvdI0nzDG173acHzltH-fCPlxYYkVQhA47V7aFNiZmVH4HAZf8OTIqtiu0DiI7SIOd5Qe'
+const AVATAR_IMAGES = {
+  chica: [chica1, chica2, chica3, chica4, chica5, chica6, chica7],
+  chico: [chico1, chico2, chico3, chico4, chico5, chico6, chico7]
 };
 
 const missions = [
@@ -145,7 +161,7 @@ const KidHub = () => {
             </div>
 
             <div className="flex items-center gap-3 lg:justify-end">
-              <img src={AVATARS[avatar]} alt="Avatar del agente" className="h-24 w-24 rounded-[1.8rem] border-4 border-white bg-white object-cover p-1 shadow-xl" />
+              <img src={AVATAR_IMAGES[avatar as 'chico' | 'chica'][progress === 100 ? 6 : level - 1]} alt="Avatar del agente" className="h-24 w-24 rounded-[1.8rem] border-4 border-white bg-white object-cover p-1 shadow-xl" />
               <button onClick={logout} className="rounded-2xl border-2 border-white/40 bg-white/15 px-4 py-3 text-xs font-black uppercase tracking-wider text-white backdrop-blur-md hover:bg-white/25"><LogOut size={17} className="mr-2 inline" />Salir</button>
             </div>
           </div>

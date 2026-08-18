@@ -42,7 +42,9 @@ const MisionInundacion = () => {
       return;
     }
 
-    localStorage.setItem('agenteNivel', '4');
+    const nivelActual = Number(localStorage.getItem('agenteNivel') || '1');
+    const nuevoNivel = Math.max(nivelActual, 4);
+    localStorage.setItem('agenteNivel', nuevoNivel.toString());
     localStorage.setItem('misionInundacionCompletada', 'true');
     window.dispatchEvent(new Event('agenteNivelActualizado'));
 
@@ -52,7 +54,7 @@ const MisionInundacion = () => {
         .from('agentes')
         .update({
           mision_inundacion: true,
-          nivel: 4,
+          nivel: nuevoNivel,
           ultima_conexion: new Date().toISOString()
         });
 

@@ -41,7 +41,9 @@ const MisionVolcan = () => {
       return;
     }
 
-    localStorage.setItem('agenteNivel', '3');
+    const nivelActual = Number(localStorage.getItem('agenteNivel') || '1');
+    const nuevoNivel = Math.max(nivelActual, 3);
+    localStorage.setItem('agenteNivel', nuevoNivel.toString());
     localStorage.setItem('misionVolcanCompletada', 'true');
     window.dispatchEvent(new Event('agenteNivelActualizado'));
 
@@ -51,7 +53,7 @@ const MisionVolcan = () => {
         .from('agentes')
         .update({
           mision_volcan: true,
-          nivel: 3,
+          nivel: nuevoNivel,
           ultima_conexion: new Date().toISOString()
         });
 
