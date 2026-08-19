@@ -219,6 +219,40 @@ const MapasPage = () => {
     setPan({ x: 0, y: 0 });
   };
 
+  const focusSchool = (inst: InstitucionBanos) => {
+    setActiveSchool(inst);
+    if (!parroquiasProjected) return;
+    const projected = parroquiasProjected.projectedInstitutions.find((i) => i.id === inst.id);
+    if (!projected) return;
+    const targetZoom = 3.2;
+    setZoom(targetZoom);
+
+    const dx = projected.svgX - parroquiasProjected.viewW / 2;
+    const dy = projected.svgY - parroquiasProjected.viewH / 2;
+    const screenScale = 0.85 * targetZoom;
+
+    setPan({
+      x: -dx * screenScale,
+      y: -dy * screenScale
+    });
+  };
+
+  const focusBanosUrban = () => {
+    if (!parroquiasProjected) return;
+    const targetZoom = 3.2;
+    setZoom(targetZoom);
+    const urbanInst = parroquiasProjected.projectedInstitutions.find((i) => i.id === 'inst-1') || parroquiasProjected.projectedInstitutions[0];
+    if (urbanInst) {
+      const dx = urbanInst.svgX - parroquiasProjected.viewW / 2;
+      const dy = urbanInst.svgY - parroquiasProjected.viewH / 2;
+      const screenScale = 0.85 * targetZoom;
+      setPan({
+        x: -dx * screenScale,
+        y: -dy * screenScale
+      });
+    }
+  };
+
   const refreshPublishedList = async () => {
     const ids = new Set<string>(['instituciones']);
 
@@ -585,7 +619,25 @@ const MapasPage = () => {
                   <p className="text-[10px] font-black uppercase tracking-[0.24em] text-emerald-300">Visor interactivo</p>
                   <p className="text-sm text-slate-400 font-semibold mt-1">{estado}</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  {selectedMapId === 'instituciones' && (
+                    <>
+                      <button
+                        onClick={focusBanosUrban}
+                        className="inline-flex items-center gap-1.5 rounded-2xl border border-amber-300/30 bg-amber-400/15 px-3 py-2 text-xs font-black uppercase tracking-wider text-amber-200 hover:bg-amber-400/25 transition shadow"
+                        title="Hacer zoom y enfocar el centro urbano de Baños donde están las escuelas agrupadas"
+                      >
+                        <Search size={14} /> Enfocar Baños Centro
+                      </button>
+                      <button
+                        onClick={resetView}
+                        className="inline-flex items-center gap-1.5 rounded-2xl border border-white/10 bg-white/10 px-3 py-2 text-xs font-black uppercase tracking-wider text-slate-300 hover:bg-white/15 transition shadow"
+                        title="Ver todo el cantón completo"
+                      >
+                        <RotateCcw size={14} /> Todo el cantón
+                      </button>
+                    </>
+                  )}
                   <ControlButton label="Alejar" onClick={zoomOut}><Minus size={17} /></ControlButton>
                   <ControlButton label="Acercar" onClick={zoomIn}><Plus size={17} /></ControlButton>
                   <ControlButton label="Reiniciar" onClick={resetView}><RotateCcw size={17} /></ControlButton>
@@ -655,6 +707,9 @@ const MapasPage = () => {
                         {/* Puntos de Instituciones Educativas */}
                         {showSchools && parroquiasProjected.projectedInstitutions.map((inst) => {
                           const isSelected = activeSchool?.id === inst.id;
+                          const rOuter = isSelected ? 12 : zoom >= 2.5 ? 9 : zoom >= 1.6 ? 7 : 5.5;
+                          const rInner = isSelected ? 4.5 : zoom >= 2.5 ? 3.5 : 2.5;
+
                           return (
                             <g
                               key={inst.id}
@@ -662,9 +717,8 @@ const MapasPage = () => {
                               className="cursor-pointer transition-transform"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setActiveSchool(inst);
+                                focusSchool(inst);
                               }}
-                              onPointerEnter={() => setActiveSchool(inst)}
                             >
                               {/* Círculo de pulso si está seleccionada */}
                               {isSelected && (
@@ -672,14 +726,41 @@ const MapasPage = () => {
                               )}
                               {/* Marcador exterior */}
                               <circle
-                                r={isSelected ? 14 : 9}
+                                r={rOuter}
                                 fill={isSelected ? '#f59e0b' : '#ef4444'}
                                 stroke="#ffffff"
-                                strokeWidth="2.5"
+                                strokeWidth={zoom >= 2 ? '2' : '1.5'}
                                 className="drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] transition-all hover:scale-125"
                               />
                               {/* Punto interior */}
-                              <circle r={isSelected ? 5 : 3.5} fill="#ffffff" />
+                              <circle r={rInner} fill="#ffffff" />
+
+                              {/* Etiqueta flotante visible con zoom o selección */}
+                              {(zoom >= 2.1 || isSelected) && (
+                                <g transform="translate(0, -13)" className="pointer-events-none select-none">
+                                  <rect
+                                    x={-(Math.min(inst.name.length, 24) * 3 + 8)}
+                                    y="-13"
+                                    width={Math.min(inst.name.length, 24) * 6 + 16}
+                                    height="16"
+                                    rx="8"
+                                    fill="#0f172a"
+                                    fillOpacity="0.92"
+                                    stroke={isSelected ? '#f59e0b' : '#ffffff'}
+                                    strokeWidth="1"
+                                  />
+                                  <text
+                                    x="0"
+                                    y="-2"
+                                    textAnchor="middle"
+                                    fill={isSelected ? '#fde047' : '#ffffff'}
+                                    fontSize="8"
+                                    fontWeight="900"
+                                  >
+                                    {inst.name.length > 24 ? inst.name.slice(0, 22) + '...' : inst.name}
+                                  </text>
+                                </g>
+                              )}
                             </g>
                           );
                         })}
@@ -730,13 +811,28 @@ const MapasPage = () => {
 
                 {/* Tooltip de información de institución activa */}
                 {selectedMapId === 'instituciones' && activeSchool && (
-                  <div className="absolute right-4 top-4 z-30 max-w-sm rounded-2xl bg-slate-950/95 p-4 text-white shadow-2xl border border-white/15 backdrop-blur-md">
+                  <div
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className="absolute right-4 top-4 z-30 max-w-sm rounded-2xl bg-slate-950/95 p-4 text-white shadow-2xl border border-white/15 backdrop-blur-md"
+                  >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2 text-amber-400">
                         <School size={18} />
                         <p className="text-[10px] font-black uppercase tracking-[0.2em]">Institución Educativa</p>
                       </div>
-                      <button onClick={() => setActiveSchool(null)} className="text-slate-400 hover:text-white p-1" aria-label="Cerrar"><X size={16} /></button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          setActiveSchool(null);
+                        }}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition"
+                        aria-label="Cerrar información"
+                      >
+                        <X size={16} />
+                      </button>
                     </div>
                     <h3 className="mt-1.5 text-base font-black leading-snug">{activeSchool.name}</h3>
                     <div className="mt-2.5 space-y-1 text-xs font-semibold text-slate-300">
@@ -827,10 +923,10 @@ const MapasPage = () => {
                         return (
                           <button
                             key={inst.id}
-                            onClick={() => setActiveSchool(inst)}
+                            onClick={() => focusSchool(inst)}
                             className={`w-full rounded-xl border p-2.5 text-left transition-all ${
                               isSelected
-                                ? 'border-amber-400 bg-amber-400/20 shadow-md'
+                                ? 'border-amber-400 bg-amber-400/20 shadow-md scale-[1.01]'
                                 : 'border-white/10 bg-slate-950/50 hover:border-orange-300/50'
                             }`}
                           >
