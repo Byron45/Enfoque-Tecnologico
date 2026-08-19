@@ -41,6 +41,9 @@ const MisionSismo = () => {
 
     const nivelActual = Number(localStorage.getItem('agenteNivel') || '1');
     const nuevoNivel = Math.max(nivelActual, 5);
+    if (5 > nivelActual) {
+      localStorage.setItem('justLeveledUp', nuevoNivel.toString());
+    }
     localStorage.setItem('agenteNivel', nuevoNivel.toString());
     localStorage.setItem('misionSismoCompletada', 'true');
     window.dispatchEvent(new Event('agenteNivelActualizado'));

@@ -43,6 +43,9 @@ const MisionVolcan = () => {
 
     const nivelActual = Number(localStorage.getItem('agenteNivel') || '1');
     const nuevoNivel = Math.max(nivelActual, 3);
+    if (3 > nivelActual) {
+      localStorage.setItem('justLeveledUp', nuevoNivel.toString());
+    }
     localStorage.setItem('agenteNivel', nuevoNivel.toString());
     localStorage.setItem('misionVolcanCompletada', 'true');
     window.dispatchEvent(new Event('agenteNivelActualizado'));

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Activity,
   Award,
@@ -23,6 +23,7 @@ import brandLogoUrl from '../assets/logo-agentes-prevencion.png';
 import CertificateModal from './CertificateModal';
 import GuideAssistant from './GuideAssistant';
 import SuggestionBox from './SuggestionBox';
+import GuiaRapidaModal from './GuiaRapidaModal';
 import { GUIDE_STEPS } from '../utils/guideSteps';
 
 import chico1 from '../assets/avatars/chico-1.webp';
@@ -99,8 +100,8 @@ const missions = [
 const tools = [
   { title: 'Videos', text: 'Mira cápsulas cortas y entretenidas.', path: '/videos', icon: Video, accent: 'border-rose-200 bg-rose-50 text-rose-700' },
   { title: 'Mapas', text: 'Explora amenazas y zonas seguras.', path: '/mapas', icon: Map, accent: 'border-cyan-200 bg-cyan-50 text-cyan-700' },
-  { title: 'Guía rápida', text: 'Recuerda los pasos más importantes.', path: '/hub', icon: BookOpen, accent: 'border-violet-200 bg-violet-50 text-violet-700' },
-  { title: 'Sugerencias', text: 'Cuéntanos qué te pareció la aventura.', path: '', icon: MessageCircleHeart, accent: 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700' }
+  { title: 'Guía rápida', text: 'Recuerda los pasos más importantes.', path: 'guia', icon: BookOpen, accent: 'border-violet-200 bg-violet-50 text-violet-700' },
+  { title: 'Sugerencias', text: 'Cuéntanos qué te pareció la aventura.', path: 'sugerencias', icon: MessageCircleHeart, accent: 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700' }
 ];
 
 const KidHub = () => {
@@ -111,6 +112,10 @@ const KidHub = () => {
   const [avatar, setAvatar] = useState<'chica' | 'chico'>('chico');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
+  
+  const [showGuiaRapida, setShowGuiaRapida] = useState(false);
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [leveledUpTo, setLeveledUpTo] = useState(1);
 
   useEffect(() => {
     const sync = () => {
@@ -119,6 +124,13 @@ const KidHub = () => {
       setAvatar(localStorage.getItem('agenteAvatar') === 'chica' ? 'chica' : 'chico');
       const storedLevel = Number(localStorage.getItem('agenteNivel') || '1');
       setLevel(Number.isFinite(storedLevel) ? Math.min(Math.max(storedLevel, 1), 6) : 1);
+      
+      const justLeveledUp = localStorage.getItem('justLeveledUp');
+      if (justLeveledUp) {
+        setLeveledUpTo(Number(justLeveledUp));
+        setShowLevelUp(true);
+        localStorage.removeItem('justLeveledUp');
+      }
     };
 
     sync();
@@ -256,7 +268,15 @@ const KidHub = () => {
             {tools.map((tool) => {
               const Icon = tool.icon;
               return (
-                <button key={tool.title} onClick={() => (tool.path ? navigate(tool.path) : setShowSuggestions(true))} className={`rounded-[2rem] border-4 p-5 text-left shadow-[0_18px_50px_rgba(0,0,0,.18)] transition hover:-translate-y-1 ${tool.accent}`}>
+                <button 
+                  key={tool.title} 
+                  onClick={() => {
+                    if (tool.path === 'sugerencias') setShowSuggestions(true);
+                    else if (tool.path === 'guia') setShowGuiaRapida(true);
+                    else navigate(tool.path);
+                  }} 
+                  className={`rounded-[2rem] border-4 p-5 text-left shadow-[0_18px_50px_rgba(0,0,0,.18)] transition hover:-translate-y-1 ${tool.accent}`}
+                >
                   <Icon size={30} />
                   <h3 className="mt-3 text-2xl font-black">{tool.title}</h3>
                   <p className="mt-1 text-sm font-bold opacity-80">{tool.text}</p>
@@ -270,6 +290,50 @@ const KidHub = () => {
       <GuideAssistant guideId="hub" steps={GUIDE_STEPS.hub} />
       <SuggestionBox open={showSuggestions} onClose={() => setShowSuggestions(false)} />
       <CertificateModal open={showCertificate} onClose={() => setShowCertificate(false)} nombre={name} institucion={school} />
+      <GuiaRapidaModal open={showGuiaRapida} onClose={() => setShowGuiaRapida(false)} />
+      
+      {/* Level Up Modal */}
+      <AnimatePresence>
+        {showLevelUp && (
+          <motion.div
+            className="fixed inset-0 z-[150] flex items-center justify-center bg-[#071D4A]/90 p-4 backdrop-blur-md"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              initial={{ scale: 0.8, y: 50 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="relative flex w-full max-w-md flex-col items-center rounded-[2.5rem] border-4 border-yellow-300 bg-gradient-to-b from-yellow-400 to-orange-500 p-8 text-center shadow-[0_0_80px_rgba(253,224,71,0.6)]"
+            >
+              <div className="absolute -top-12 animate-bounce rounded-full border-4 border-white bg-white p-2 shadow-xl">
+                <Star size={48} className="fill-yellow-400 text-yellow-500" />
+              </div>
+              <h2 className="mt-6 text-4xl font-black text-white drop-shadow-md">¡Súper!</h2>
+              <p className="mt-2 text-xl font-bold text-yellow-100">Has subido al</p>
+              <h3 className="mt-1 text-5xl font-black text-white drop-shadow-lg">Nivel {leveledUpTo}</h3>
+              
+              <div className="my-6 rounded-3xl border-4 border-white/50 bg-white/20 p-4 backdrop-blur-sm">
+                <img 
+                  src={AVATAR_IMAGES[avatar as 'chico' | 'chica'][leveledUpTo === 6 && progress === 100 ? 6 : leveledUpTo - 1]} 
+                  alt="Tu nuevo avatar" 
+                  className="mx-auto h-32 w-32 rounded-full border-4 border-white bg-white object-cover shadow-lg"
+                />
+                <p className="mt-3 text-sm font-bold text-white">¡Revisa tu nuevo equipo de prevención!</p>
+              </div>
+
+              <button
+                onClick={() => setShowLevelUp(false)}
+                className="w-full rounded-2xl bg-white px-6 py-4 text-lg font-black uppercase text-orange-600 shadow-xl transition hover:-translate-y-1 hover:bg-yellow-50"
+              >
+                ¡Genial, a seguir!
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </main>
   );
 };
