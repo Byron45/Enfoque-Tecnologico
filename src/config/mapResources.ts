@@ -1,4 +1,5 @@
 export type MapResourceId =
+  | 'instituciones'
   | 'inundaciones'
   | 'volcanico'
   | 'deslizamientos'
@@ -22,11 +23,21 @@ export type MapResource = {
 // Subtítulos de tarjetas vacíos para mantener las tarjetas limpias y sin textos secundarios.
 export const MAP_RESOURCES: MapResource[] = [
   {
+    id: 'instituciones',
+    title: 'Mapa de Instituciones Educativas de Baños',
+    shortTitle: 'Instituciones',
+    subtitle: '',
+    description: 'Ubicación geográfica de las instituciones educativas del cantón Baños de Agua Santa sobre el mapa territorial de parroquias.',
+    storagePrefix: 'instituciones',
+    fileKeywords: ['instituciones', 'escuelas', 'colegios'],
+    accent: 'from-amber-400 via-orange-500 to-rose-500'
+  },
+  {
     id: 'inundaciones',
     title: 'Mapa de amenaza por inundaciones',
     shortTitle: 'Inundaciones',
     subtitle: '',
-    description: 'Mapa temático de susceptibilidad por inundaciones. Permite identificar niveles de amenaza, cambiar simbología, activar instituciones y revisar zonas vulnerables.',
+    description: 'Mapa temático de susceptibilidad por inundaciones. Permite identificar niveles de amenaza, cambiar simbología y revisar zonas vulnerables.',
     storagePrefix: 'inundaciones',
     fileKeywords: ['inundaciones', 'inundacion', 'inun_reclass1', 'inun_reclass', 'inun'],
     accent: 'from-cyan-500 to-blue-600'
