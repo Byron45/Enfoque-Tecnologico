@@ -139,6 +139,10 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
     const nivelActual = Number(localStorage.getItem('agenteNivel') || '1');
     const nuevoNivel = Math.max(nivelActual, nivelSugerido);
 
+    if (nivelSugerido > nivelActual) {
+      localStorage.setItem('justLeveledUp', nuevoNivel.toString());
+    }
+
     localStorage.setItem('agenteNivel', nuevoNivel.toString());
     localStorage.setItem(`mision${tipo.charAt(0).toUpperCase()}${tipo.slice(1)}Completada`, 'true');
 
