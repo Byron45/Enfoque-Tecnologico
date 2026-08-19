@@ -58,6 +58,10 @@ const AdminPanel = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deletingBulk, setDeletingBulk] = useState(false);
   const [sugerencias, setSugerencias] = useState<Sugerencia[]>([]);
+  const [sugerenciaSeleccionada, setSugerenciaSeleccionada] = useState<Sugerencia | null>(null);
+  const [confirmarEliminarTodasSugerencias, setConfirmarEliminarTodasSugerencias] = useState(false);
+  const [deletingSugerenciaId, setDeletingSugerenciaId] = useState<string | null>(null);
+  const [deletingAllSugerencias, setDeletingAllSugerencias] = useState(false);
 
   const cargarDatos = async () => {
     setLoading(true);
@@ -219,6 +223,54 @@ const AdminPanel = () => {
       setErrorMsg('No se pudieron eliminar los registros seleccionados. Verifica la política DELETE en Supabase.');
     } finally {
       setDeletingBulk(false);
+    }
+  };
+
+  const eliminarSugerencia = async (id: string) => {
+    if (!isSupabaseConfigured) {
+      setErrorMsg('Supabase no está configurado. No se pueden eliminar sugerencias.');
+      setSugerenciaSeleccionada(null);
+      return;
+    }
+
+    setDeletingSugerenciaId(id);
+    setErrorMsg('');
+
+    try {
+      const { error } = await supabase.from('sugerencias').delete().eq('id', id);
+      if (error) throw error;
+
+      setSugerencias((prev) => prev.filter((item) => item.id !== id));
+      setSugerenciaSeleccionada(null);
+    } catch (error) {
+      console.error(error);
+      setErrorMsg('No se pudo eliminar la sugerencia. Verifica que exista una política DELETE en la tabla sugerencias.');
+    } finally {
+      setDeletingSugerenciaId(null);
+    }
+  };
+
+  const eliminarTodasSugerencias = async () => {
+    if (!isSupabaseConfigured) {
+      setErrorMsg('Supabase no está configurado. No se pueden eliminar sugerencias.');
+      setConfirmarEliminarTodasSugerencias(false);
+      return;
+    }
+
+    setDeletingAllSugerencias(true);
+    setErrorMsg('');
+
+    try {
+      const { error } = await supabase.from('sugerencias').delete().not('id', 'is', null);
+      if (error) throw error;
+
+      setSugerencias([]);
+      setConfirmarEliminarTodasSugerencias(false);
+    } catch (error) {
+      console.error(error);
+      setErrorMsg('No se pudieron eliminar todas las sugerencias. Verifica la política DELETE en la tabla sugerencias.');
+    } finally {
+      setDeletingAllSugerencias(false);
     }
   };
 
@@ -494,12 +546,22 @@ const AdminPanel = () => {
         </section>
 
         <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-xl md:p-6">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-fuchsia-50 text-fuchsia-700"><MessageCircleHeart size={22} /></div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-fuchsia-600">Buzón de sugerencias</p>
-              <h2 className="text-2xl font-black text-slate-950">Últimas opiniones de los agentes</h2>
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-fuchsia-50 text-fuchsia-700"><MessageCircleHeart size={22} /></div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-fuchsia-600">Buzón de sugerencias</p>
+                <h2 className="text-2xl font-black text-slate-950">Últimas opiniones de los agentes</h2>
+              </div>
             </div>
+            {sugerencias.length > 0 && (
+              <button
+                onClick={() => setConfirmarEliminarTodasSugerencias(true)}
+                className="inline-flex items-center gap-2 self-start rounded-xl border border-red-200 bg-red-50 px-3.5 py-2 text-xs font-black uppercase tracking-wider text-red-700 hover:bg-red-100 transition sm:self-auto"
+              >
+                <Trash2 size={14} /> Borrar todas las sugerencias
+              </button>
+            )}
           </div>
 
           {sugerencias.length === 0 ? (
@@ -507,14 +569,24 @@ const AdminPanel = () => {
           ) : (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {sugerencias.map((item) => (
-                <div key={item.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div key={item.id} className="relative rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-slate-300">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1 text-amber-500">
                       {Array.from({ length: 5 }).map((_, index) => (
                         <Star key={index} size={14} fill={index < item.calificacion ? 'currentColor' : 'none'} />
                       ))}
                     </div>
-                    <span className="text-[10px] font-bold text-slate-400">{formatearFecha(item.created_at)}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-slate-400">{formatearFecha(item.created_at)}</span>
+                      <button
+                        onClick={() => setSugerenciaSeleccionada(item)}
+                        className="rounded-lg p-1 text-slate-400 hover:bg-red-100 hover:text-red-600 transition"
+                        title="Eliminar sugerencia"
+                        aria-label="Eliminar sugerencia"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
                   <p className="mt-2 text-xs font-black uppercase tracking-wide text-slate-700">{item.nombre || 'Agente anónimo'} · {item.institucion || 'Sin institución'}</p>
                   {item.comentario && <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-600">"{item.comentario}"</p>}
@@ -586,6 +658,73 @@ const AdminPanel = () => {
                 className="flex-1 rounded-2xl bg-red-600 px-4 py-3 font-black uppercase tracking-wider text-white hover:bg-red-500 disabled:opacity-50"
               >
                 {deletingBulk ? 'Eliminando...' : `Eliminar ${seleccionados.size}`}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {sugerenciaSeleccionada && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="w-full max-w-md rounded-[2rem] bg-white p-6 shadow-2xl"
+          >
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+              <Trash2 size={26} />
+            </div>
+            <h3 className="text-2xl font-black">Eliminar sugerencia</h3>
+            <p className="mt-2 font-semibold text-slate-600">
+              ¿Seguro que deseas eliminar la sugerencia de <strong>{sugerenciaSeleccionada.nombre || 'este agente'}</strong>? Esta acción no se puede deshacer.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setSugerenciaSeleccionada(null)}
+                className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 font-black uppercase tracking-wider text-slate-600 hover:bg-slate-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => eliminarSugerencia(sugerenciaSeleccionada.id)}
+                disabled={deletingSugerenciaId === sugerenciaSeleccionada.id}
+                className="flex-1 rounded-2xl bg-red-600 px-4 py-3 font-black uppercase tracking-wider text-white hover:bg-red-500 disabled:opacity-50"
+              >
+                {deletingSugerenciaId === sugerenciaSeleccionada.id ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {confirmarEliminarTodasSugerencias && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="w-full max-w-md rounded-[2rem] bg-white p-6 shadow-2xl"
+          >
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+              <Trash2 size={26} />
+            </div>
+            <h3 className="text-2xl font-black">Vaciar buzón de sugerencias</h3>
+            <p className="mt-2 font-semibold text-slate-600">
+              Vas a eliminar <strong>todas las sugerencias ({sugerencias.length})</strong> registradas en la base de datos. Esta acción no se puede deshacer.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setConfirmarEliminarTodasSugerencias(false)}
+                disabled={deletingAllSugerencias}
+                className="flex-1 rounded-2xl border border-slate-200 px-4 py-3 font-black uppercase tracking-wider text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={eliminarTodasSugerencias}
+                disabled={deletingAllSugerencias}
+                className="flex-1 rounded-2xl bg-red-600 px-4 py-3 font-black uppercase tracking-wider text-white hover:bg-red-500 disabled:opacity-50"
+              >
+                {deletingAllSugerencias ? 'Eliminando...' : 'Borrar todas'}
               </button>
             </div>
           </motion.div>
