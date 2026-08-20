@@ -163,8 +163,8 @@ const CertificateModal = ({ open, onClose, nombre, institucion }: Props) => {
       ctx.clearRect(0, 0, W, H);
       drawBackground(ctx);
 
-      const logoS = 450;
-      ctx.drawImage(logo, 275, 250, logoS, logoS);
+      const logoS = 370;
+      ctx.drawImage(logo, W - logoS - 260, 275, logoS, logoS);
 
       const heroH = 440;
       const ninAR = heroina.width / heroina.height;
@@ -204,14 +204,14 @@ const CertificateModal = ({ open, onClose, nombre, institucion }: Props) => {
       ctx.font = 'italic 60px Arial, Helvetica, sans-serif';
       ctx.fillStyle = '#444444';
       ctx.fillText('certifican que:', FULL_CX, y);
-      y += 130;
+      y += 140;
 
-      const nameSize = fitFont(ctx, displayName, 1900, 150, 70, 'bold italic');
-      const adjustedNameSize = Math.max(nameSize - 10, 60);
+      const nameSize = fitFont(ctx, displayName, 1800, 120, 55, 'bold italic');
+      const adjustedNameSize = Math.max(nameSize - 5, 55);
       ctx.font = `bold italic ${adjustedNameSize}px Arial, Helvetica, sans-serif`;
       ctx.fillStyle = '#050505';
       ctx.fillText(displayName, FULL_CX, y);
-      y += adjustedNameSize * 0.55 + 50;
+      y += adjustedNameSize * 0.48 + 35;
 
       drawSeparator(ctx, y, 1000);
       y += 90;
