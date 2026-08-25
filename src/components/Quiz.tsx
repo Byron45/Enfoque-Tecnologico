@@ -16,6 +16,15 @@ import volcanQ3Correcta from '../assets/quiz/volcan-q3-correcta.webp';
 import volcanQ3OptGafasProteccion from '../assets/quiz/volcan-q3-opt-gafas-proteccion.webp';
 import volcanQ3OptLentesContacto from '../assets/quiz/volcan-q3-opt-lentes-contacto.webp';
 import volcanQ3OptGafasSol from '../assets/quiz/volcan-q3-opt-gafas-sol.webp';
+import inundacionQ1Tv from '../assets/quiz/inundacion-q1-opt-television.webp';
+import inundacionQ1Radio from '../assets/quiz/inundacion-q1-opt-radio.webp';
+import inundacionQ1Energia from '../assets/quiz/inundacion-q1-opt-energia.webp';
+import inundacionQ2Calle from '../assets/quiz/inundacion-q2-opt-calle.webp';
+import inundacionQ2ZonasAltas from '../assets/quiz/inundacion-q2-opt-zonas-altas.webp';
+import inundacionQ2Sotano from '../assets/quiz/inundacion-q2-opt-sotano.webp';
+import inundacionQ3Juguetes from '../assets/quiz/inundacion-q3-opt-juguetes.webp';
+import inundacionQ3Botiquin from '../assets/quiz/inundacion-q3-opt-botiquin.webp';
+import inundacionQ3Joyas from '../assets/quiz/inundacion-q3-opt-joyas.webp';
 
 interface ImageOption {
   label: string;
@@ -40,12 +49,62 @@ interface QuizProps {
   onClose: () => void;
 }
 
+const colorSchemes = {
+  diagnostico: {
+    border: 'border-violet-500/50',
+    shadow: 'shadow-[0_0_60px_rgba(139,92,246,0.25)]',
+    badgeBg: 'bg-violet-500/20',
+    badgeBorder: 'border-violet-500/30',
+    badgeText: 'text-violet-200',
+    iconColor: 'text-violet-400',
+    headerEmojiBorder: 'border-violet-500/30'
+  },
+  volcan: {
+    border: 'border-red-500/50',
+    shadow: 'shadow-[0_0_60px_rgba(239,68,68,0.25)]',
+    badgeBg: 'bg-red-500/20',
+    badgeBorder: 'border-red-500/30',
+    badgeText: 'text-red-200',
+    iconColor: 'text-red-400',
+    headerEmojiBorder: 'border-red-500/30'
+  },
+  inundacion: {
+    border: 'border-cyan-500/50',
+    shadow: 'shadow-[0_0_60px_rgba(6,182,212,0.25)]',
+    badgeBg: 'bg-cyan-500/20',
+    badgeBorder: 'border-cyan-500/30',
+    badgeText: 'text-cyan-200',
+    iconColor: 'text-cyan-400',
+    headerEmojiBorder: 'border-cyan-500/30'
+  },
+  sismo: {
+    border: 'border-amber-500/50',
+    shadow: 'shadow-[0_0_60px_rgba(245,158,11,0.25)]',
+    badgeBg: 'bg-amber-500/20',
+    badgeBorder: 'border-amber-500/30',
+    badgeText: 'text-amber-200',
+    iconColor: 'text-amber-400',
+    headerEmojiBorder: 'border-amber-500/30'
+  },
+  evacuacion: {
+    border: 'border-emerald-500/50',
+    shadow: 'shadow-[0_0_60px_rgba(16,185,129,0.25)]',
+    badgeBg: 'bg-emerald-500/20',
+    badgeBorder: 'border-emerald-500/30',
+    badgeText: 'text-emerald-200',
+    iconColor: 'text-emerald-400',
+    headerEmojiBorder: 'border-emerald-500/30'
+  }
+};
+
 const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
   const [step, setStep] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
   const [score, setScore] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  const theme = colorSchemes[tipo] || colorSchemes.volcan;
 
   const preguntas: Record<string, Question[]> = {
     diagnostico: [
@@ -102,9 +161,36 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
       }
     ],
     inundacion: [
-      { pregunta: 'Si el agua entra en casa, ¿qué desconectas primero?', opciones: ['La radio', 'La energía eléctrica', 'La televisión'], correcta: 1 },
-      { pregunta: '¿Hacia dónde debes dirigirte en una inundación?', opciones: ['A la calle', 'A zonas altas', 'Al sótano'], correcta: 1 },
-      { pregunta: '¿Qué debe tener tu mochila de emergencia?', opciones: ['Juguetes', 'Botiquín y linterna', 'Libros'], correcta: 1 }
+      {
+        pregunta: 'Si el agua entra en casa, ¿qué desconectas primero?',
+        opciones: ['La radio', 'La energía eléctrica', 'La televisión'],
+        correcta: 1,
+        opcionesImagen: [
+          { label: 'La radio', image: inundacionQ1Radio },
+          { label: 'La energía eléctrica', image: inundacionQ1Energia },
+          { label: 'La televisión', image: inundacionQ1Tv }
+        ]
+      },
+      {
+        pregunta: '¿Hacia dónde debes dirigirte en una inundación?',
+        opciones: ['A la calle', 'A zonas altas', 'Al sótano'],
+        correcta: 1,
+        opcionesImagen: [
+          { label: 'A la calle', image: inundacionQ2Calle },
+          { label: 'A zonas altas', image: inundacionQ2ZonasAltas },
+          { label: 'Al sótano', image: inundacionQ2Sotano }
+        ]
+      },
+      {
+        pregunta: '¿Qué debe tener tu mochila de emergencia?',
+        opciones: ['Juguetes', 'Botiquín de primeros auxilios', 'Joyas y lujos'],
+        correcta: 1,
+        opcionesImagen: [
+          { label: 'Juguetes', image: inundacionQ3Juguetes },
+          { label: 'Botiquín de primeros auxilios', image: inundacionQ3Botiquin },
+          { label: 'Joyas y lujos', image: inundacionQ3Joyas }
+        ]
+      }
     ],
     sismo: [
       { pregunta: '¿Qué debes hacer apenas sientes un sismo fuerte?', opciones: ['Correr afuera de inmediato', 'Agacharte, cubrirte y sujetarte', 'Quedarte de pie junto a la ventana'], correcta: 1 },
@@ -207,9 +293,9 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
         initial={{ scale: 0.92, opacity: 0, y: 28 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         transition={{ duration: 0.28 }}
-        className="relative bg-gradient-to-b from-[#1a0505] to-[#010413] border-4 border-red-500/50 p-7 md:p-10 rounded-[2.5rem] max-w-2xl w-full shadow-[0_0_60px_rgba(239,68,68,0.25)]"
+        className={`relative bg-gradient-to-b from-[#0a0f1d] to-[#010413] border-4 ${theme.border} p-7 md:p-10 rounded-[2.5rem] max-w-2xl w-full ${theme.shadow}`}
       >
-        <div className="absolute -top-7 right-8 flex space-x-2 bg-black/45 p-3 rounded-full border-2 border-red-500/30 backdrop-blur-md shadow-xl">
+        <div className={`absolute -top-7 right-8 flex space-x-2 bg-black/45 p-3 rounded-full border-2 ${theme.headerEmojiBorder} backdrop-blur-md shadow-xl`}>
           <span className="text-3xl">💡</span>
           <span className="text-3xl">🧠</span>
         </div>
@@ -224,9 +310,9 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
         ) : (
           <>
             <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center space-x-3 bg-red-500/20 px-4 py-2 rounded-2xl border border-red-500/30 w-fit">
-                <BrainCircuit size={20} className="text-red-400" />
-                <span className="text-[12px] font-black uppercase tracking-[0.2em] text-red-200">
+              <div className={`flex items-center space-x-3 ${theme.badgeBg} px-4 py-2 rounded-2xl border ${theme.badgeBorder} w-fit`}>
+                <BrainCircuit size={20} className={theme.iconColor} />
+                <span className={`text-[12px] font-black uppercase tracking-[0.2em] ${theme.badgeText}`}>
                   Misión: {tipo.toUpperCase()}
                 </span>
               </div>
