@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BrainCircuit, Star, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import DragDropQuestion, { type DragOption } from './DragDropQuestion';
+import MochilaDragDropQuestion, { type MochilaItem } from './MochilaDragDropQuestion';
 import volcanQ1Base from '../assets/quiz/volcan-q1-base.webp';
 import volcanQ1Correcta from '../assets/quiz/volcan-q1-correcta.webp';
 import volcanQ1Mascarilla from '../assets/quiz/volcan-q1-opt-mascarilla.webp';
@@ -22,9 +23,15 @@ import inundacionQ1Energia from '../assets/quiz/inundacion-q1-opt-energia.webp';
 import inundacionQ2Calle from '../assets/quiz/inundacion-q2-opt-calle.webp';
 import inundacionQ2ZonasAltas from '../assets/quiz/inundacion-q2-opt-zonas-altas.webp';
 import inundacionQ2Sotano from '../assets/quiz/inundacion-q2-opt-sotano.webp';
+import inundacionQ3Mochila from '../assets/quiz/inundacion-q3-mochila.webp';
 import inundacionQ3Juguetes from '../assets/quiz/inundacion-q3-opt-juguetes.webp';
 import inundacionQ3Botiquin from '../assets/quiz/inundacion-q3-opt-botiquin.webp';
+import inundacionQ3Enlatados from '../assets/quiz/inundacion-q3-opt-enlatados.webp';
+import inundacionQ3Agua from '../assets/quiz/inundacion-q3-opt-agua.webp';
+import inundacionQ3Chatarra from '../assets/quiz/inundacion-q3-opt-chatarra.webp';
+import inundacionQ3Aseo from '../assets/quiz/inundacion-q3-opt-aseo.webp';
 import inundacionQ3Joyas from '../assets/quiz/inundacion-q3-opt-joyas.webp';
+import inundacionQ3Utensilios from '../assets/quiz/inundacion-q3-opt-utensilios.webp';
 
 interface ImageOption {
   label: string;
@@ -41,6 +48,11 @@ interface Question {
     opciones: DragOption[];
   };
   opcionesImagen?: ImageOption[];
+  mochilaArrastrar?: {
+    imagenMochila: string;
+    itemsIzquierda: MochilaItem[];
+    itemsDerecha: MochilaItem[];
+  };
 }
 
 interface QuizProps {
@@ -182,14 +194,24 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
         ]
       },
       {
-        pregunta: '¿Qué debe tener tu mochila de emergencia?',
-        opciones: ['Juguetes', 'Botiquín de primeros auxilios', 'Joyas y lujos'],
-        correcta: 1,
-        opcionesImagen: [
-          { label: 'Juguetes', image: inundacionQ3Juguetes },
-          { label: 'Botiquín de primeros auxilios', image: inundacionQ3Botiquin },
-          { label: 'Joyas y lujos', image: inundacionQ3Joyas }
-        ]
+        pregunta: '¿Qué elementos debes guardar en tu mochila de emergencia?',
+        opciones: ['Botiquín, Alimentos, Agua y Aseo', 'Juguetes y comida rápida', 'Joyas y cubiertos'],
+        correcta: 0,
+        mochilaArrastrar: {
+          imagenMochila: inundacionQ3Mochila,
+          itemsIzquierda: [
+            { id: 'juguetes', label: 'Juguetes', image: inundacionQ3Juguetes, isCorrect: false },
+            { id: 'botiquin', label: 'Botiquín', image: inundacionQ3Botiquin, isCorrect: true },
+            { id: 'chatarra', label: 'Comida rápida', image: inundacionQ3Chatarra, isCorrect: false },
+            { id: 'enlatados', label: 'Alimentos no perecibles', image: inundacionQ3Enlatados, isCorrect: true }
+          ],
+          itemsDerecha: [
+            { id: 'agua', label: 'Agua embotellada', image: inundacionQ3Agua, isCorrect: true },
+            { id: 'joyas', label: 'Joyas y lujos', image: inundacionQ3Joyas, isCorrect: false },
+            { id: 'aseo', label: 'Artículos de aseo', image: inundacionQ3Aseo, isCorrect: true },
+            { id: 'utensilios', label: 'Utensilios de cocina', image: inundacionQ3Utensilios, isCorrect: false }
+          ]
+        }
       }
     ],
     sismo: [
@@ -293,7 +315,7 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
         initial={{ scale: 0.92, opacity: 0, y: 28 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         transition={{ duration: 0.28 }}
-        className={`relative bg-gradient-to-b from-[#0a0f1d] to-[#010413] border-4 ${theme.border} p-7 md:p-10 rounded-[2.5rem] max-w-2xl w-full ${theme.shadow}`}
+        className={`relative bg-gradient-to-b from-[#0a0f1d] to-[#010413] border-4 ${theme.border} p-6 md:p-8 rounded-[2.5rem] ${actualQuestions[step].mochilaArrastrar ? 'max-w-4xl' : 'max-w-2xl'} w-full ${theme.shadow} transition-all duration-300`}
       >
         <div className={`absolute -top-7 right-8 flex space-x-2 bg-black/45 p-3 rounded-full border-2 ${theme.headerEmojiBorder} backdrop-blur-md shadow-xl`}>
           <span className="text-3xl">💡</span>
@@ -309,7 +331,7 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
           </div>
         ) : (
           <>
-            <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className={`flex items-center space-x-3 ${theme.badgeBg} px-4 py-2 rounded-2xl border ${theme.badgeBorder} w-fit`}>
                 <BrainCircuit size={20} className={theme.iconColor} />
                 <span className={`text-[12px] font-black uppercase tracking-[0.2em] ${theme.badgeText}`}>
@@ -328,11 +350,33 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
               </motion.div>
             </header>
 
-            <h2 className="text-2xl md:text-3xl font-black text-white leading-tight mb-8 text-center">
+            <h2 className="text-2xl md:text-3xl font-black text-white leading-tight mb-6 text-center">
               {actualQuestions[step].pregunta}
             </h2>
 
-            {actualQuestions[step].opcionesImagen ? (
+            {actualQuestions[step].mochilaArrastrar ? (
+              <div className="mb-6">
+                <MochilaDragDropQuestion
+                  imagenMochila={actualQuestions[step].mochilaArrastrar!.imagenMochila}
+                  itemsIzquierda={actualQuestions[step].mochilaArrastrar!.itemsIzquierda}
+                  itemsDerecha={actualQuestions[step].mochilaArrastrar!.itemsDerecha}
+                  disabled={status !== 'idle' || isSyncing}
+                  onComplete={() => {
+                    setStatus('correct');
+                    setScore((prev) => prev + 100);
+                    window.setTimeout(() => {
+                      if (step + 1 < actualQuestions.length) {
+                        setStep((prev) => prev + 1);
+                        setSelected(null);
+                        setStatus('idle');
+                      } else {
+                        handleLevelUp();
+                      }
+                    }, 1400);
+                  }}
+                />
+              </div>
+            ) : actualQuestions[step].opcionesImagen ? (
               <div className="grid grid-cols-3 gap-4 mb-8">
                 {actualQuestions[step].opcionesImagen!.map((opImg, index) => {
                   const isSelected = selected === index;
