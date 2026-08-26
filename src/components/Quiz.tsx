@@ -32,6 +32,14 @@ import inundacionQ3Chatarra from '../assets/quiz/inundacion-q3-opt-chatarra.webp
 import inundacionQ3Aseo from '../assets/quiz/inundacion-q3-opt-aseo.webp';
 import inundacionQ3Joyas from '../assets/quiz/inundacion-q3-opt-joyas.webp';
 import inundacionQ3Utensilios from '../assets/quiz/inundacion-q3-opt-utensilios.webp';
+import sismoQ1Correr from '../assets/quiz/sismo-q1-opt-correr.webp';
+import sismoQ1Agacharse from '../assets/quiz/sismo-q1-opt-agacharse.webp';
+import sismoQ1Inmovil from '../assets/quiz/sismo-q1-opt-inmovil.webp';
+import sismoQ2Mesa from '../assets/quiz/sismo-q2-opt-mesa.webp';
+import sismoQ2Espejo from '../assets/quiz/sismo-q2-opt-espejo.webp';
+import sismoQ2Ascensor from '../assets/quiz/sismo-q2-opt-ascensor.webp';
+import sismoQ3Danos from '../assets/quiz/sismo-q3-opt-danos.webp';
+import sismoQ3Redes from '../assets/quiz/sismo-q3-opt-redes.webp';
 
 interface ImageOption {
   label: string;
@@ -215,9 +223,35 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
       }
     ],
     sismo: [
-      { pregunta: '¿Qué debes hacer apenas sientes un sismo fuerte?', opciones: ['Correr afuera de inmediato', 'Agacharte, cubrirte y sujetarte', 'Quedarte de pie junto a la ventana'], correcta: 1 },
-      { pregunta: '¿Dónde es más seguro protegerte durante el movimiento?', opciones: ['Bajo una mesa resistente', 'Cerca de un espejo grande', 'Dentro del ascensor'], correcta: 0 },
-      { pregunta: 'Cuando termina el sismo, ¿qué debes revisar primero?', opciones: ['Si hay heridos o daños visibles', 'Tus redes sociales', 'Si tus amigos lo sintieron'], correcta: 0 }
+      {
+        pregunta: '¿Qué debes hacer apenas sientes un sismo fuerte?',
+        opciones: ['Correr afuera de inmediato', 'Agacharte, cubrirte y sujetarte', 'Quedarte inmóvil con miedo'],
+        correcta: 1,
+        opcionesImagen: [
+          { label: 'Correr afuera', image: sismoQ1Correr },
+          { label: 'Agacharte y cubrirte', image: sismoQ1Agacharse },
+          { label: 'Quedarte con miedo', image: sismoQ1Inmovil }
+        ]
+      },
+      {
+        pregunta: '¿Dónde es más seguro protegerte durante el movimiento?',
+        opciones: ['Bajo una mesa resistente', 'Cerca de un espejo grande', 'Dentro del ascensor'],
+        correcta: 0,
+        opcionesImagen: [
+          { label: 'Mesa resistente', image: sismoQ2Mesa },
+          { label: 'Cerca de un espejo', image: sismoQ2Espejo },
+          { label: 'Dentro del ascensor', image: sismoQ2Ascensor }
+        ]
+      },
+      {
+        pregunta: 'Cuando termina el sismo, ¿qué debes revisar primero?',
+        opciones: ['Revisar si hay heridos o daños', 'Revisar tus redes sociales'],
+        correcta: 0,
+        opcionesImagen: [
+          { label: 'Revisar heridos o daños', image: sismoQ3Danos },
+          { label: 'Revisar redes sociales', image: sismoQ3Redes }
+        ]
+      }
     ],
     evacuacion: [
       { pregunta: '¿Qué herramienta es vital para mantener la calma?', opciones: ['Seguir la señalética', 'Correr rápido', 'Gritar fuerte'], correcta: 0 },
@@ -377,7 +411,7 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
                 />
               </div>
             ) : actualQuestions[step].opcionesImagen ? (
-              <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className={`grid ${actualQuestions[step].opcionesImagen!.length === 2 ? 'grid-cols-2 max-w-lg mx-auto' : 'grid-cols-3'} gap-4 mb-8`}>
                 {actualQuestions[step].opcionesImagen!.map((opImg, index) => {
                   const isSelected = selected === index;
                   const isCorrect = isSelected && status === 'correct';
