@@ -314,10 +314,9 @@ const Hub = () => {
               const completada = nivelAgente > mision.nivelReq;
 
               return (
-                <motion.article
+                <article
                   key={mision.id}
-                  whileHover={{ y: -4 }}
-                  className="rounded-[2rem] border border-white/10 bg-white/5 overflow-hidden backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.25)]"
+                  className="rounded-[2rem] border border-white/10 bg-white/5 overflow-hidden backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.25)] transition-transform duration-200 ease-out hover:-translate-y-1"
                 >
                   <div className="relative h-44 overflow-hidden p-5">
                     <img src={mision.imageUrl} alt={mision.titulo} className="absolute inset-0 h-full w-full object-cover" />
@@ -365,7 +364,7 @@ const Hub = () => {
                       )}
                     </button>
                   </div>
-                </motion.article>
+                </article>
               );
             })}
           </div>
@@ -387,13 +386,12 @@ const Hub = () => {
               const clickeable = Boolean(item.path);
 
               return (
-                <motion.article
+                <article
                   key={item.titulo}
-                  whileHover={clickeable ? { y: -4 } : undefined}
                   onClick={() => item.path && navigate(item.path)}
                   data-cursor={clickeable ? 'interactive' : undefined}
-                  className={`rounded-[1.7rem] bg-slate-950/65 border border-white/10 overflow-hidden relative transition-all ${
-                    clickeable ? 'hover:border-cyan-300/50 hover:bg-slate-900/80' : ''
+                  className={`rounded-[1.7rem] bg-slate-950/65 border border-white/10 overflow-hidden relative transition-all duration-200 ease-out ${
+                    clickeable ? 'hover:border-cyan-300/50 hover:bg-slate-900/80 hover:-translate-y-1 cursor-pointer' : ''
                   }`}
                 >
                   <div className="relative h-32 overflow-hidden">
@@ -414,7 +412,7 @@ const Hub = () => {
                       {item.estado}
                     </div>
                   </div>
-                </motion.article>
+                </article>
               );
             })}
           </div>

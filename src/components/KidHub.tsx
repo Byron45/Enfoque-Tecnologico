@@ -221,7 +221,15 @@ const KidHub = () => {
               const Icon = mission.icon;
 
               return (
-                <motion.article key={mission.path} whileHover={unlocked ? { y: -8, rotate: -.4 } : undefined} className="overflow-hidden rounded-[2.2rem] border-4 border-white bg-white shadow-[0_22px_65px_rgba(0,0,0,.22)]">
+                <article
+                  key={mission.path}
+                  className={`overflow-hidden rounded-[2.2rem] border-4 border-white bg-white shadow-[0_22px_65px_rgba(0,0,0,.22)] transition-all duration-200 ease-out ${
+                    unlocked
+                      ? 'hover:-translate-y-2 hover:-rotate-[0.4deg] hover:shadow-[0_28px_80px_rgba(0,0,0,.28)] cursor-pointer'
+                      : 'opacity-90'
+                  }`}
+                  onClick={() => unlocked && navigate(mission.path)}
+                >
                   <div className={`relative min-h-48 bg-gradient-to-br ${mission.gradient} p-5 text-white`}>
                     <div className="absolute right-5 top-4 text-6xl drop-shadow-lg">{mission.sticker}</div>
                     <div className="relative z-10 flex min-h-40 flex-col justify-between">
@@ -234,11 +242,20 @@ const KidHub = () => {
                   </div>
                   <div className="p-5">
                     <p className="min-h-14 text-sm font-bold leading-relaxed text-slate-600">{mission.description}</p>
-                    <button onClick={() => unlocked && navigate(mission.path)} disabled={!unlocked} className={`mt-4 flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-4 text-xs font-black uppercase tracking-wider transition ${unlocked ? 'bg-[#121F4D] text-white hover:-translate-y-1 hover:bg-violet-700' : 'cursor-not-allowed bg-slate-100 text-slate-400'}`}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (unlocked) navigate(mission.path);
+                      }}
+                      disabled={!unlocked}
+                      className={`mt-4 flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-4 text-xs font-black uppercase tracking-wider transition ${
+                        unlocked ? 'bg-[#121F4D] text-white hover:-translate-y-1 hover:bg-violet-700' : 'cursor-not-allowed bg-slate-100 text-slate-400'
+                      }`}
+                    >
                       {unlocked ? <><PlayCircle size={18} /> Entrar a la misión <ChevronRight size={18} /></> : <>🔒 Completa la misión anterior</>}
                     </button>
                   </div>
-                </motion.article>
+                </article>
               );
             })}
           </div>

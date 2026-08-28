@@ -102,7 +102,7 @@ const MisionVolcan = () => {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-          className="absolute left-1/2 top-1/2 w-[1100px] h-[1100px] -translate-x-1/2 -translate-y-1/2"
+          className="absolute left-1/2 top-1/2 w-[1100px] h-[1100px] -translate-x-1/2 -translate-y-1/2 will-change-transform"
         >
           <div className="absolute top-0 left-1/2 w-96 h-96 bg-orange-500/35 rounded-full blur-[125px]" />
           <div className="absolute bottom-10 right-0 w-[420px] h-[420px] bg-red-500/25 rounded-full blur-[135px]" />

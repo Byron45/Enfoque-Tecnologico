@@ -16,7 +16,6 @@ const INTERACTIVE_SELECTOR = [
   '.cursor-interactive'
 ].join(',');
 
-
 const CROSSHAIR_SELECTOR = '[data-cursor="crosshair"]';
 
 type Pose = 'idle' | 'interactive' | 'pressed';
@@ -29,106 +28,100 @@ const POSES: Record<Pose, { src: string; width: number; height: number; hotspotX
   pressed: { src: pressedUrl, width: 1056, height: 615, hotspotXRatio: 0.0057, hotspotYRatio: 0.6260 }
 };
 
-const preloadCursorImage = (src: string) => {
-  const image = new Image();
-  image.src = src;
-  return image;
-};
-
-[idleUrl, hoverUrl, pressedUrl].forEach(preloadCursorImage);
-
 const poseMetrics = (pose: Pose) => {
   const config = POSES[pose];
   const displayHeight = DISPLAY_WIDTH * (config.height / config.width);
   return {
-    src: config.src,
-    displayHeight,
     hotspotX: DISPLAY_WIDTH * config.hotspotXRatio,
-    hotspotY: displayHeight * config.hotspotYRatio
+    hotspotY: displayHeight * config.hotspotYRatio,
+    displayHeight
   };
+};
+
+const METRICS_BY_POSE: Record<Pose, { hotspotX: number; hotspotY: number; displayHeight: number }> = {
+  idle: poseMetrics('idle'),
+  interactive: poseMetrics('interactive'),
+  pressed: poseMetrics('pressed')
 };
 
 const CustomCursor = () => {
   const cursorRef = useRef<HTMLDivElement | null>(null);
-  const imgRef = useRef<HTMLImageElement | null>(null);
-  const frameRef = useRef<number | null>(null);
-  const lastPointRef = useRef({ x: -200, y: -200 });
-  const poseRef = useRef<Pose>('idle');
-  const hotspotRef = useRef(poseMetrics('idle'));
 
   useEffect(() => {
     const finePointer = window.matchMedia('(pointer: fine)');
     if (!finePointer.matches) return;
 
     const cursor = cursorRef.current;
-    const img = imgRef.current;
-    if (!cursor || !img) return;
+    if (!cursor) return;
 
     document.documentElement.classList.add('custom-cursor-enabled');
 
-    const renderAt = (clientX: number, clientY: number) => {
-      lastPointRef.current = { x: clientX, y: clientY };
-      if (frameRef.current !== null) return;
+    let isPressed = false;
+    let currentPose: Pose = 'idle';
+    let currentHotspot = METRICS_BY_POSE.idle;
 
-      frameRef.current = window.requestAnimationFrame(() => {
-        frameRef.current = null;
-        const { x, y } = lastPointRef.current;
-        const { hotspotX, hotspotY } = hotspotRef.current;
-        cursor.style.transform = `translate3d(${x - hotspotX}px, ${y - hotspotY}px, 0)`;
-      });
+    const setPose = (newPose: Pose) => {
+      if (currentPose === newPose) return;
+      currentPose = newPose;
+      currentHotspot = METRICS_BY_POSE[newPose];
+      cursor.dataset.pose = newPose;
     };
 
-    const applyPose = (pose: Pose) => {
-      if (poseRef.current === pose) return;
-      poseRef.current = pose;
-      const metrics = poseMetrics(pose);
-      hotspotRef.current = metrics;
-      img.src = metrics.src;
-      cursor.style.width = `${DISPLAY_WIDTH}px`;
-      cursor.style.height = `${metrics.displayHeight}px`;
+    const updatePosition = (clientX: number, clientY: number) => {
+      cursor.style.transform = `translate3d(${clientX - currentHotspot.hotspotX}px, ${clientY - currentHotspot.hotspotY}px, 0)`;
+      if (cursor.dataset.visible !== 'true') {
+        cursor.dataset.visible = 'true';
+      }
     };
 
-    const setMode = (target: EventTarget | null, pressed = false) => {
+    const checkHoverState = (target: EventTarget | null) => {
       const element = target instanceof Element ? target : null;
       const overCrosshair = Boolean(element?.closest(CROSSHAIR_SELECTOR));
-      cursor.dataset.visible = overCrosshair ? 'false' : 'true';
+      if (overCrosshair) {
+        cursor.dataset.visible = 'false';
+        return;
+      }
+      cursor.dataset.visible = 'true';
 
-      if (pressed) {
-        applyPose('pressed');
+      if (isPressed) {
+        setPose('pressed');
         return;
       }
 
-      applyPose(element?.closest(INTERACTIVE_SELECTOR) ? 'interactive' : 'idle');
+      const isInteractive = Boolean(element?.closest(INTERACTIVE_SELECTOR));
+      setPose(isInteractive ? 'interactive' : 'idle');
     };
 
     const move = (event: PointerEvent) => {
-      setMode(event.target);
-      renderAt(event.clientX, event.clientY);
+      updatePosition(event.clientX, event.clientY);
     };
 
     const over = (event: PointerEvent) => {
-      setMode(event.target);
+      checkHoverState(event.target);
+      updatePosition(event.clientX, event.clientY);
     };
 
     const out = (event: PointerEvent) => {
       const element = event.relatedTarget instanceof Element ? event.relatedTarget : null;
-      setMode(element);
+      checkHoverState(element);
     };
 
     const down = (event: PointerEvent) => {
-      setMode(event.target, true);
-      renderAt(event.clientX, event.clientY);
+      isPressed = true;
+      setPose('pressed');
+      updatePosition(event.clientX, event.clientY);
     };
 
     const up = (event: PointerEvent) => {
+      isPressed = false;
       const element = document.elementFromPoint(event.clientX, event.clientY);
-      setMode(element);
-      renderAt(event.clientX, event.clientY);
+      checkHoverState(element);
+      updatePosition(event.clientX, event.clientY);
     };
 
     const hide = () => {
       cursor.dataset.visible = 'false';
-      applyPose('idle');
+      setPose('idle');
     };
 
     window.addEventListener('pointermove', move, { passive: true });
@@ -150,7 +143,6 @@ const CustomCursor = () => {
       window.removeEventListener('blur', hide);
       document.documentElement.removeEventListener('mouseleave', hide);
       document.removeEventListener('visibilitychange', hide);
-      if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
     };
   }, []);
 
@@ -160,9 +152,11 @@ const CustomCursor = () => {
       aria-hidden="true"
       className="custom-hummingbird-cursor"
       data-visible="false"
-      style={{ width: DISPLAY_WIDTH, height: poseMetrics('idle').displayHeight }}
+      data-pose="idle"
     >
-      <img ref={imgRef} src={idleUrl} alt="" draggable={false} />
+      <img src={idleUrl} className="cursor-img cursor-img-idle" alt="" draggable={false} />
+      <img src={hoverUrl} className="cursor-img cursor-img-interactive" alt="" draggable={false} />
+      <img src={pressedUrl} className="cursor-img cursor-img-pressed" alt="" draggable={false} />
     </div>
   );
 };
