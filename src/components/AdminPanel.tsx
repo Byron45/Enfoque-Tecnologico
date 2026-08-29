@@ -1,22 +1,35 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
+  Activity,
+  AlertCircle,
+  Award,
   BarChart3,
   CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  ClipboardCheck,
+  Compass,
   Download,
+  Eye,
   Filter,
+  HelpCircle,
   MessageCircleHeart,
+  Mountain,
   RefreshCw,
   School,
   Search,
   ShieldAlert,
   Star,
   Trash2,
+  TrendingUp,
   Trophy,
   Users,
+  Waves,
   X
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../supabaseClient';
+import type { MetricasQuiz } from './Quiz';
 
 type Agente = {
   id: string;
@@ -31,6 +44,7 @@ type Agente = {
   mision_inundacion: boolean | null;
   mision_sismo: boolean | null;
   mision_evacuacion: boolean | null;
+  metricas_quiz?: MetricasQuiz | null;
   ultima_conexion: string | null;
 };
 
@@ -53,6 +67,7 @@ const AdminPanel = () => {
   const [escuelaFiltro, setEscuelaFiltro] = useState('todas');
   const [estadoFiltro, setEstadoFiltro] = useState<EstadoFiltro>('todos');
   const [registroSeleccionado, setRegistroSeleccionado] = useState<Agente | null>(null);
+  const [agenteDetalle, setAgenteDetalle] = useState<Agente | null>(null);
   const [seleccionados, setSeleccionados] = useState<Set<string>>(() => new Set());
   const [confirmarEliminacionMasiva, setConfirmarEliminacionMasiva] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -70,7 +85,7 @@ const AdminPanel = () => {
     try {
       const { data, error } = await supabase
         .from('agentes')
-        .select('id, created_at, nombre, institucion, edad, avatar, nivel, mision_diagnostico, mision_volcan, mision_inundacion, mision_sismo, mision_evacuacion, ultima_conexion')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -284,30 +299,57 @@ const AdminPanel = () => {
       'Edad',
       'Institución',
       'Nivel',
-      'Progreso',
-      'Diagnóstico',
-      'Volcán',
-      'Inundación',
-      'Sismo',
-      'Evacuación',
-      'Registro',
-      'Última conexión'
+      'Progreso (%)',
+      'Total Aciertos',
+      'Total Errores',
+      'Efectividad (%)',
+      'Diagnóstico Estado',
+      'Diagnóstico (Aciertos/Errores)',
+      'Volcán Estado',
+      'Volcán (Aciertos/Errores)',
+      'Inundación Estado',
+      'Inundación (Aciertos/Errores)',
+      'Sismo Estado',
+      'Sismo (Aciertos/Errores)',
+      'Evacuación Estado',
+      'Evacuación (Aciertos/Errores)',
+      'Fecha Registro',
+      'Última Conexión'
     ];
 
-    const filas = origen.map((a) => [
-      a.nombre || 'Sin nombre',
-      a.edad ?? 'N/A',
-      a.institucion || 'Sin institución',
-      a.nivel ?? 1,
-      `${obtenerProgreso(a)}%`,
-      a.mision_diagnostico ? 'Completada' : 'Pendiente',
-      a.mision_volcan ? 'Completada' : 'Pendiente',
-      a.mision_inundacion ? 'Completada' : 'Pendiente',
-      a.mision_sismo ? 'Completada' : 'Pendiente',
-      a.mision_evacuacion ? 'Completada' : 'Pendiente',
-      formatearFecha(a.created_at),
-      formatearFecha(a.ultima_conexion)
-    ]);
+    const filas = origen.map((a) => {
+      const met = obtenerMetricas(a);
+      const mq = a.metricas_quiz?.misiones || {};
+
+      const diagA = mq.diagnostico ? `${mq.diagnostico.aciertos}A / ${mq.diagnostico.errores}E` : (a.mision_diagnostico ? '10A / 0E' : 'Pendiente');
+      const volcA = mq.volcan ? `${mq.volcan.aciertos}A / ${mq.volcan.errores}E` : (a.mision_volcan ? '3A / 0E' : 'Pendiente');
+      const inunA = mq.inundacion ? `${mq.inundacion.aciertos}A / ${mq.inundacion.errores}E` : (a.mision_inundacion ? '3A / 0E' : 'Pendiente');
+      const sismA = mq.sismo ? `${mq.sismo.aciertos}A / ${mq.sismo.errores}E` : (a.mision_sismo ? '3A / 0E' : 'Pendiente');
+      const evacA = mq.evacuacion ? `${mq.evacuacion.aciertos}A / ${mq.evacuacion.errores}E` : (a.mision_evacuacion ? '3A / 0E' : 'Pendiente');
+
+      return [
+        a.nombre || 'Sin nombre',
+        a.edad ?? 'N/A',
+        a.institucion || 'Sin institución',
+        a.nivel ?? 1,
+        `${obtenerProgreso(a)}%`,
+        met.totalAciertos,
+        met.totalErrores,
+        `${met.efectividad}%`,
+        a.mision_diagnostico ? 'Completada' : 'Pendiente',
+        diagA,
+        a.mision_volcan ? 'Completada' : 'Pendiente',
+        volcA,
+        a.mision_inundacion ? 'Completada' : 'Pendiente',
+        inunA,
+        a.mision_sismo ? 'Completada' : 'Pendiente',
+        sismA,
+        a.mision_evacuacion ? 'Completada' : 'Pendiente',
+        evacA,
+        formatearFecha(a.created_at),
+        formatearFecha(a.ultima_conexion)
+      ];
+    });
 
     const csv = [encabezado, ...filas]
       .map((fila) => fila.map((celda) => `"${String(celda).replace(/"/g, '""')}"`).join(','))
@@ -474,6 +516,7 @@ const AdminPanel = () => {
                   <th className="px-5 py-4">Nivel</th>
                   <th className="px-5 py-4">Progreso</th>
                   <th className="px-5 py-4">Misiones</th>
+                  <th className="px-5 py-4">Aciertos / Errores</th>
                   <th className="px-5 py-4">Registro</th>
                   <th className="px-5 py-4 text-right">Acciones</th>
                 </tr>
@@ -481,16 +524,17 @@ const AdminPanel = () => {
               <tbody className="divide-y divide-slate-100">
                 {loading ? (
                   <tr>
-                    <td colSpan={9} className="px-5 py-12 text-center font-black text-slate-500">Cargando registros...</td>
+                    <td colSpan={10} className="px-5 py-12 text-center font-black text-slate-500">Cargando registros...</td>
                   </tr>
                 ) : agentesFiltrados.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-5 py-12 text-center font-black text-slate-500">No hay registros para mostrar.</td>
+                    <td colSpan={10} className="px-5 py-12 text-center font-black text-slate-500">No hay registros para mostrar.</td>
                   </tr>
                 ) : (
                   agentesFiltrados.map((agente) => {
                     const progreso = obtenerProgreso(agente);
                     const isSelected = seleccionados.has(agente.id);
+                    const metricas = obtenerMetricas(agente);
 
                     return (
                       <tr key={agente.id} className={`transition-colors ${isSelected ? 'bg-cyan-50' : 'hover:bg-slate-50/70'}`}>
@@ -504,8 +548,17 @@ const AdminPanel = () => {
                           />
                         </td>
                         <td className="px-5 py-4">
-                          <div className="font-black text-slate-950">{agente.nombre || 'Sin nombre'}</div>
-                          <div className="text-xs font-bold text-slate-500">Avatar: {agente.avatar || 'N/A'}</div>
+                          <button
+                            onClick={() => setAgenteDetalle(agente)}
+                            className="text-left group"
+                            title="Haz clic para ver la tabulación detallada"
+                          >
+                            <div className="font-black text-slate-950 group-hover:text-cyan-600 transition flex items-center gap-1.5">
+                              {agente.nombre || 'Sin nombre'}
+                              <Eye size={13} className="opacity-0 group-hover:opacity-100 text-cyan-600 transition" />
+                            </div>
+                            <div className="text-xs font-bold text-slate-500">Avatar: {agente.avatar || 'N/A'}</div>
+                          </button>
                         </td>
                         <td className="px-5 py-4 font-semibold text-slate-600">{agente.institucion || 'Sin institución'}</td>
                         <td className="px-5 py-4 font-bold">{agente.edad ?? 'N/A'}</td>
@@ -527,14 +580,35 @@ const AdminPanel = () => {
                             <MissionDot active={Boolean(agente.mision_evacuacion)} label="E" />
                           </div>
                         </td>
+                        <td className="px-5 py-4">
+                          <button
+                            onClick={() => setAgenteDetalle(agente)}
+                            className="group inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold transition hover:border-violet-300 hover:bg-violet-50"
+                            title="Ver tabulación detallada de preguntas y respuestas"
+                          >
+                            <span className="font-black text-emerald-600">✓ {metricas.totalAciertos}</span>
+                            <span className="text-slate-300">/</span>
+                            <span className="font-black text-rose-600">✗ {metricas.totalErrores}</span>
+                            <Eye size={13} className="text-slate-400 group-hover:text-violet-600 transition" />
+                          </button>
+                        </td>
                         <td className="px-5 py-4 text-sm font-semibold text-slate-500">{formatearFecha(agente.created_at)}</td>
                         <td className="px-5 py-4 text-right">
-                          <button
-                            onClick={() => setRegistroSeleccionado(agente)}
-                            className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-black uppercase tracking-wider text-red-700 hover:bg-red-100"
-                          >
-                            <Trash2 size={14} /> Eliminar
-                          </button>
+                          <div className="inline-flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => setAgenteDetalle(agente)}
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-black uppercase tracking-wider text-violet-700 hover:bg-violet-100 transition"
+                              title="Ver métricas y tabulación detallada"
+                            >
+                              <BarChart3 size={14} /> Tabulación
+                            </button>
+                            <button
+                              onClick={() => setRegistroSeleccionado(agente)}
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-black uppercase tracking-wider text-red-700 hover:bg-red-100 transition"
+                            >
+                              <Trash2 size={14} /> Eliminar
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -730,8 +804,233 @@ const AdminPanel = () => {
           </motion.div>
         </div>
       )}
+
+      {agenteDetalle && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md overflow-y-auto">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="relative w-full max-w-4xl rounded-[2.5rem] bg-white p-6 md:p-8 shadow-2xl my-8 max-h-[90vh] overflow-y-auto border-4 border-slate-100"
+          >
+            {/* Header del Estudiante */}
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-5">
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-cyan-100 text-3xl shadow-inner">
+                  {agenteDetalle.avatar || '🧒'}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-2xl font-black text-slate-950">{agenteDetalle.nombre || 'Estudiante'}</h3>
+                    <span className="rounded-full bg-slate-950 px-3 py-0.5 text-xs font-black text-white">
+                      Nivel {agenteDetalle.nivel ?? 1}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm font-bold text-slate-500">
+                    {agenteDetalle.institucion || 'Sin institución'} · {agenteDetalle.edad ? `${agenteDetalle.edad} años` : 'Edad no registrada'} · Registrado: {formatearFecha(agenteDetalle.created_at)}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setAgenteDetalle(null)}
+                className="rounded-2xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+                aria-label="Cerrar modal"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Tarjetas de Métricas Globales */}
+            {(() => {
+              const met = obtenerMetricas(agenteDetalle);
+              return (
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
+                    <div className="flex items-center gap-2 text-emerald-700 font-bold text-xs uppercase tracking-wider">
+                      <CheckCircle2 size={18} /> Aciertos Totales
+                    </div>
+                    <p className="mt-2 text-3xl font-black text-emerald-950">{met.totalAciertos}</p>
+                    <p className="text-xs font-semibold text-emerald-700 mt-0.5">Respuestas correctas logradas</p>
+                  </div>
+
+                  <div className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4">
+                    <div className="flex items-center gap-2 text-rose-700 font-bold text-xs uppercase tracking-wider">
+                      <AlertCircle size={18} /> Errores / Reintentos
+                    </div>
+                    <p className="mt-2 text-3xl font-black text-rose-950">{met.totalErrores}</p>
+                    <p className="text-xs font-semibold text-rose-700 mt-0.5">Intentos fallidos previos</p>
+                  </div>
+
+                  <div className="rounded-2xl border border-violet-100 bg-violet-50/70 p-4">
+                    <div className="flex items-center gap-2 text-violet-700 font-bold text-xs uppercase tracking-wider">
+                      <TrendingUp size={18} /> Precisión / Efectividad
+                    </div>
+                    <p className="mt-2 text-3xl font-black text-violet-950">{met.efectividad}%</p>
+                    <p className="text-xs font-semibold text-violet-700 mt-0.5">Rendimiento global</p>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Tabulación por Misión */}
+            <div className="mt-8">
+              <h4 className="text-sm font-black uppercase tracking-[0.2em] text-slate-500 mb-4 flex items-center gap-2">
+                <BarChart3 size={18} className="text-cyan-600" /> Tabulación detallada por Misión y Pregunta
+              </h4>
+
+              <div className="space-y-4">
+                {(['diagnostico', 'volcan', 'inundacion', 'sismo', 'evacuacion'] as const).map((key) => {
+                  const info = PREGUNTAS_DEFECTO[key];
+                  const campoCompletada = `mision_${key}` as keyof Agente;
+                  const completada = Boolean(agenteDetalle[campoCompletada]);
+                  const mq = agenteDetalle.metricas_quiz?.misiones?.[key];
+
+                  const aciertosMision = mq?.aciertos ?? (completada ? info.preguntas.length : 0);
+                  const erroresMision = mq?.errores ?? 0;
+
+                  return (
+                    <div key={key} className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 transition hover:border-slate-300">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/70 pb-3">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{info.icono}</span>
+                          <div>
+                            <h5 className="font-black text-slate-900 text-base">{info.titulo}</h5>
+                            <span className="text-xs font-bold text-slate-500">
+                              {info.preguntas.length} preguntas en esta misión
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 self-start sm:self-auto">
+                          <span className={`inline-flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-black uppercase tracking-wider ${completada ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                            {completada ? <><CheckCircle2 size={13} /> Completada</> : '⏳ Pendiente'}
+                          </span>
+                          <span className="rounded-xl border border-slate-200 bg-white px-2.5 py-1 text-xs font-black text-slate-700">
+                            ✓ {aciertosMision} Aciertos | ✗ {erroresMision} Errores
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Tabla de Preguntas */}
+                      <div className="mt-3 overflow-x-auto">
+                        <table className="w-full text-left text-xs">
+                          <thead>
+                            <tr className="text-slate-400 font-bold uppercase tracking-wider border-b border-slate-200/50">
+                              <th className="pb-2 w-10">#</th>
+                              <th className="pb-2">Pregunta / Concepto Clave</th>
+                              <th className="pb-2 text-center w-24">Aciertos</th>
+                              <th className="pb-2 text-center w-24">Errores</th>
+                              <th className="pb-2 text-right w-28">Estado</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+                            {info.preguntas.map((enunciadoDefecto, idx) => {
+                              const pregData = mq?.preguntas?.[idx];
+                              const pAciertos = pregData?.aciertos ?? (completada ? 1 : 0);
+                              const pErrores = pregData?.errores ?? 0;
+                              const pEnunciado = pregData?.enunciado || enunciadoDefecto;
+                              const respondida = pAciertos > 0 || completada;
+
+                              return (
+                                <tr key={idx} className="hover:bg-white/80 transition">
+                                  <td className="py-2.5 font-black text-slate-400">P{idx + 1}</td>
+                                  <td className="py-2.5 pr-3 text-slate-800 font-bold">{pEnunciado}</td>
+                                  <td className="py-2.5 text-center">
+                                    <span className="inline-flex items-center justify-center rounded-lg bg-emerald-100 px-2 py-0.5 font-black text-emerald-800">
+                                      {pAciertos}
+                                    </span>
+                                  </td>
+                                  <td className="py-2.5 text-center">
+                                    <span className={`inline-flex items-center justify-center rounded-lg px-2 py-0.5 font-black ${pErrores > 0 ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-500'}`}>
+                                      {pErrores}
+                                    </span>
+                                  </td>
+                                  <td className="py-2.5 text-right">
+                                    {respondida ? (
+                                      <span className="font-bold text-emerald-600">Aprobada ✓</span>
+                                    ) : (
+                                      <span className="font-bold text-slate-400">Sin responder</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-8 flex justify-end">
+              <button
+                onClick={() => setAgenteDetalle(null)}
+                className="rounded-2xl bg-slate-950 px-6 py-3 font-black uppercase tracking-wider text-white hover:bg-slate-800 transition"
+              >
+                Cerrar Detalle
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </main>
   );
+};
+
+const PREGUNTAS_DEFECTO: Record<string, { titulo: string; icono: string; preguntas: string[] }> = {
+  diagnostico: {
+    titulo: 'Diagnóstico Inicial',
+    icono: '📋',
+    preguntas: [
+      '¿Qué significa "Amenaza" en Gestión de Riesgos?',
+      '¿Qué significa ser "Vulnerable" ante un desastre?',
+      'Suma de Amenaza y Vulnerabilidad = Riesgo',
+      '¿A qué llamamos verdaderamente un "Desastre"?',
+      '¿Qué es la "Prevención" de riesgos?',
+      '¿Qué significa que una comunidad sea "Resiliente"?',
+      '¿Para qué sirve un Sistema de Alerta Temprana (SAT)?',
+      'Diferencia entre Urgencia y Emergencia',
+      '¿Cómo se define una "Zona Segura"?',
+      'Tener una buena Percepción del Riesgo'
+    ]
+  },
+  volcan: {
+    titulo: 'Misión 1: Alerta Volcánica',
+    icono: '🌋',
+    preguntas: [
+      'Protección de vías respiratorias frente a la ceniza (Mascarilla)',
+      'Cuidado y cobertura de depósitos de agua en casa',
+      'Protección de los ojos frente a la caída de ceniza (Gafas de protección)'
+    ]
+  },
+  inundacion: {
+    titulo: 'Misión 2: Inundaciones',
+    icono: '🌊',
+    preguntas: [
+      'Desconexión inmediata de energía eléctrica',
+      'Evacuación hacia zonas altas y seguras',
+      'Mochila de Emergencia: 4 elementos indispensables'
+    ]
+  },
+  sismo: {
+    titulo: 'Misión 3: Sismos y Terremotos',
+    icono: '📳',
+    preguntas: [
+      'Acción inmediata durante el temblor (Agacharse y cubrirse)',
+      'Zona más segura de resguardo (Bajo una mesa resistente)',
+      'Revisión posterior prioritaria (Heridos y daños)'
+    ]
+  },
+  evacuacion: {
+    titulo: 'Misión 4: Evacuación y Plan Familiar',
+    icono: '🧭',
+    preguntas: [
+      'Herramienta vital de orientación (Seguir la señalética)',
+      'Punto de encuentro seguro familiar',
+      'Acción solidaria y segura (Ayudar a los demás)'
+    ]
+  }
 };
 
 const MetricCard = ({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: string | number; tone: string }) => {
@@ -762,6 +1061,25 @@ const MissionDot = ({ active, label }: { active: boolean; label: string }) => (
 const obtenerProgreso = (agente: Agente) => {
   const completadas = [agente.mision_diagnostico, agente.mision_volcan, agente.mision_inundacion, agente.mision_sismo, agente.mision_evacuacion].filter(Boolean).length;
   return Math.round((completadas / 5) * 100);
+};
+
+const obtenerMetricas = (agente: Agente): { totalAciertos: number; totalErrores: number; efectividad: number } => {
+  if (agente.metricas_quiz && typeof agente.metricas_quiz === 'object') {
+    const mq = agente.metricas_quiz;
+    const totalA = mq.total_aciertos || 0;
+    const totalE = mq.total_errores || 0;
+    const totalResp = totalA + totalE;
+    const efectividad = totalResp > 0 ? Math.round((totalA / totalResp) * 100) : (totalA > 0 ? 100 : 0);
+    return { totalAciertos: totalA, totalErrores: totalE, efectividad };
+  }
+
+  let aciertos = 0;
+  if (agente.mision_diagnostico) aciertos += 10;
+  if (agente.mision_volcan) aciertos += 3;
+  if (agente.mision_inundacion) aciertos += 3;
+  if (agente.mision_sismo) aciertos += 3;
+  if (agente.mision_evacuacion) aciertos += 3;
+  return { totalAciertos: aciertos, totalErrores: 0, efectividad: aciertos > 0 ? 100 : 0 };
 };
 
 const formatearFecha = (value: string | null) => {

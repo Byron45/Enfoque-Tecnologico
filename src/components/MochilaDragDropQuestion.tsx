@@ -15,6 +15,7 @@ type Props = {
   itemsDerecha: MochilaItem[];
   disabled: boolean;
   onComplete: () => void;
+  onError?: () => void;
 };
 
 const MochilaDragDropQuestion = ({
@@ -22,7 +23,8 @@ const MochilaDragDropQuestion = ({
   itemsIzquierda,
   itemsDerecha,
   disabled,
-  onComplete
+  onComplete,
+  onError
 }: Props) => {
   const dropZoneRef = useRef<HTMLDivElement | null>(null);
   const [collectedIds, setCollectedIds] = useState<string[]>([]);
@@ -47,6 +49,7 @@ const MochilaDragDropQuestion = ({
       }
     } else {
       setWrongId(item.id);
+      onError?.();
       setTimeout(() => {
         setWrongId(null);
       }, 700);

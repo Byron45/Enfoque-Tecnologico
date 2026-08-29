@@ -40,6 +40,42 @@ import sismoQ2Espejo from '../assets/quiz/sismo-q2-opt-espejo.webp';
 import sismoQ2Ascensor from '../assets/quiz/sismo-q2-opt-ascensor.webp';
 import sismoQ3Danos from '../assets/quiz/sismo-q3-opt-danos.webp';
 import sismoQ3Redes from '../assets/quiz/sismo-q3-opt-redes.webp';
+import evacuacionQ1Senales from '../assets/quiz/evacuacion-q1-opt-senales.webp';
+import evacuacionQ1Correr from '../assets/quiz/evacuacion-q1-opt-correr.webp';
+import evacuacionQ1Gritar from '../assets/quiz/evacuacion-q1-opt-gritar.webp';
+import evacuacionQ2Casa from '../assets/quiz/evacuacion-q2-opt-casa.webp';
+import evacuacionQ2Encuentro from '../assets/quiz/evacuacion-q2-opt-encuentro.webp';
+import evacuacionQ2Auto from '../assets/quiz/evacuacion-q2-opt-auto.webp';
+import evacuacionQ3Escaleras from '../assets/quiz/evacuacion-q3-opt-escaleras.webp';
+import evacuacionQ3Ayuda from '../assets/quiz/evacuacion-q3-opt-ayuda.webp';
+import evacuacionQ3Llamadas from '../assets/quiz/evacuacion-q3-opt-llamadas.webp';
+
+export interface MetricaPregunta {
+  pregunta: number;
+  enunciado?: string;
+  aciertos: number;
+  errores: number;
+}
+
+export interface MetricaMision {
+  completada: boolean;
+  aciertos: number;
+  errores: number;
+  preguntas: MetricaPregunta[];
+}
+
+export interface MetricasQuiz {
+  total_aciertos: number;
+  total_errores: number;
+  misiones: {
+    diagnostico?: MetricaMision;
+    volcan?: MetricaMision;
+    inundacion?: MetricaMision;
+    sismo?: MetricaMision;
+    evacuacion?: MetricaMision;
+    [key: string]: MetricaMision | undefined;
+  };
+}
 
 interface ImageOption {
   label: string;
@@ -123,6 +159,9 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
   const [score, setScore] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [intentosPorPregunta, setIntentosPorPregunta] = useState<{
+    [step: number]: { aciertos: number; errores: number };
+  }>({});
 
   const theme = colorSchemes[tipo] || colorSchemes.volcan;
 
@@ -254,9 +293,36 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
       }
     ],
     evacuacion: [
-      { pregunta: '¿Qué herramienta es vital para mantener la calma?', opciones: ['Seguir la señalética', 'Correr rápido', 'Gritar fuerte'], correcta: 0 },
-      { pregunta: '¿Dónde debes reunirte con tu familia?', opciones: ['Dentro de casa', 'Punto de encuentro seguro', 'En el auto'], correcta: 1 },
-      { pregunta: '¿Qué debes evitar durante la evacuación?', opciones: ['Usar escaleras', 'Ayudar a otros', 'Usar ascensores'], correcta: 2 }
+      {
+        pregunta: '¿Qué herramienta es vital para guiarte durante una evacuación?',
+        opciones: ['Seguir la señalética', 'Correr desesperado', 'Gritar fuerte'],
+        correcta: 0,
+        opcionesImagen: [
+          { label: 'Seguir señalética', image: evacuacionQ1Senales },
+          { label: 'Correr en pánico', image: evacuacionQ1Correr },
+          { label: 'Gritar fuerte', image: evacuacionQ1Gritar }
+        ]
+      },
+      {
+        pregunta: '¿Dónde debes reunirte con tu familia en una emergencia?',
+        opciones: ['Dentro de casa', 'Punto de encuentro seguro', 'En el auto'],
+        correcta: 1,
+        opcionesImagen: [
+          { label: 'Dentro de casa', image: evacuacionQ2Casa },
+          { label: 'Punto de encuentro', image: evacuacionQ2Encuentro },
+          { label: 'En el auto', image: evacuacionQ2Auto }
+        ]
+      },
+      {
+        pregunta: '¿Qué acción solidaria y segura debes practicar al evacuar?',
+        opciones: ['Empujar en escaleras', 'Ayudar a los demás', 'Distraerte llamando'],
+        correcta: 1,
+        opcionesImagen: [
+          { label: 'Usar escaleras con prisa', image: evacuacionQ3Escaleras },
+          { label: 'Ayudar a otros', image: evacuacionQ3Ayuda },
+          { label: 'Hacer llamadas', image: evacuacionQ3Llamadas }
+        ]
+      }
     ]
   };
 
@@ -288,6 +354,59 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
     localStorage.setItem('agenteNivel', nuevoNivel.toString());
     localStorage.setItem(`mision${tipo.charAt(0).toUpperCase()}${tipo.slice(1)}Completada`, 'true');
 
+    // Compilación de métricas de aciertos y errores
+    let metricasExistentes: MetricasQuiz = {
+      total_aciertos: 0,
+      total_errores: 0,
+      misiones: {}
+    };
+
+    try {
+      const rawStored = localStorage.getItem('agenteMetricasQuiz');
+      if (rawStored) {
+        metricasExistentes = JSON.parse(rawStored);
+        if (!metricasExistentes.misiones) metricasExistentes.misiones = {};
+      }
+    } catch {
+      metricasExistentes = { total_aciertos: 0, total_errores: 0, misiones: {} };
+    }
+
+    const preguntasData: MetricaPregunta[] = actualQuestions.map((q, idx) => ({
+      pregunta: idx + 1,
+      enunciado: q.pregunta,
+      aciertos: Math.max(intentosPorPregunta[idx]?.aciertos || 1, 1),
+      errores: intentosPorPregunta[idx]?.errores || 0
+    }));
+
+    const misionAciertos = preguntasData.reduce((acc, p) => acc + p.aciertos, 0);
+    const misionErrores = preguntasData.reduce((acc, p) => acc + p.errores, 0);
+
+    const nuevasMetricas: MetricasQuiz = {
+      ...metricasExistentes,
+      misiones: {
+        ...metricasExistentes.misiones,
+        [tipo]: {
+          completada: true,
+          aciertos: misionAciertos,
+          errores: misionErrores,
+          preguntas: preguntasData
+        }
+      }
+    };
+
+    let totalA = 0;
+    let totalE = 0;
+    Object.values(nuevasMetricas.misiones).forEach((m) => {
+      if (m) {
+        totalA += m.aciertos || 0;
+        totalE += m.errores || 0;
+      }
+    });
+    nuevasMetricas.total_aciertos = totalA;
+    nuevasMetricas.total_errores = totalE;
+
+    localStorage.setItem('agenteMetricasQuiz', JSON.stringify(nuevasMetricas));
+
     try {
       if (registroId || nombreGuardado) {
         const query = supabase
@@ -295,6 +414,7 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
           .update({
             nivel: nuevoNivel,
             [campoMision]: true,
+            metricas_quiz: nuevasMetricas,
             ultima_conexion: new Date().toISOString()
           });
 
@@ -303,7 +423,21 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
           : await query.eq('nombre', nombreGuardado as string);
 
         if (error) {
-          console.warn('Supabase no sincronizó el quiz, pero el progreso local fue guardado:', error.message);
+          console.warn('Supabase no actualizó metricas_quiz, reintentando actualización básica:', error.message);
+          const fallbackQuery = supabase
+            .from('agentes')
+            .update({
+              nivel: nuevoNivel,
+              [campoMision]: true,
+              ultima_conexion: new Date().toISOString()
+            });
+          const fallbackRes = registroId
+            ? await fallbackQuery.eq('id', registroId)
+            : await fallbackQuery.eq('nombre', nombreGuardado as string);
+
+          if (fallbackRes.error) {
+            console.warn('Fallo también en fallback:', fallbackRes.error.message);
+          }
         }
       }
     } catch (err) {
@@ -322,6 +456,13 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
     setSelected(index);
 
     if (index === actualQuestions[step].correcta) {
+      setIntentosPorPregunta((prev) => ({
+        ...prev,
+        [step]: {
+          aciertos: (prev[step]?.aciertos || 0) + 1,
+          errores: prev[step]?.errores || 0
+        }
+      }));
       setStatus('correct');
       setScore((prev) => prev + 100);
 
@@ -335,6 +476,13 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
         }
       }, 1200);
     } else {
+      setIntentosPorPregunta((prev) => ({
+        ...prev,
+        [step]: {
+          aciertos: prev[step]?.aciertos || 0,
+          errores: (prev[step]?.errores || 0) + 1
+        }
+      }));
       setStatus('wrong');
       window.setTimeout(() => {
         setSelected(null);
@@ -395,7 +543,23 @@ const Quiz: React.FC<QuizProps> = ({ tipo, onWin, onClose }) => {
                   itemsIzquierda={actualQuestions[step].mochilaArrastrar!.itemsIzquierda}
                   itemsDerecha={actualQuestions[step].mochilaArrastrar!.itemsDerecha}
                   disabled={status !== 'idle' || isSyncing}
+                  onError={() => {
+                    setIntentosPorPregunta((prev) => ({
+                      ...prev,
+                      [step]: {
+                        aciertos: prev[step]?.aciertos || 0,
+                        errores: (prev[step]?.errores || 0) + 1
+                      }
+                    }));
+                  }}
                   onComplete={() => {
+                    setIntentosPorPregunta((prev) => ({
+                      ...prev,
+                      [step]: {
+                        aciertos: (prev[step]?.aciertos || 0) + 1,
+                        errores: prev[step]?.errores || 0
+                      }
+                    }));
                     setStatus('correct');
                     setScore((prev) => prev + 100);
                     window.setTimeout(() => {
