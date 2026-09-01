@@ -4,6 +4,7 @@ import { Award, Download, X } from 'lucide-react';
 import logoUrl from '../assets/logo-agentes-prevencion.png';
 import heroiNinaUrl from '../assets/guia-nina.png';
 import heroiNinoUrl from '../assets/guia-nino.png';
+import colibriUrl from '../assets/colibri-certificado.webp';
 
 type Props = {
   open: boolean;
@@ -153,10 +154,11 @@ const CertificateModal = ({ open, onClose, nombre, institucion }: Props) => {
       const ctx = canvas?.getContext('2d');
       if (!canvas || !ctx) return;
 
-      const [logo, heroina, heroe] = await Promise.all([
+      const [logo, heroina, heroe, colibri] = await Promise.all([
         loadImage(logoUrl),
         loadImage(heroiNinaUrl),
         loadImage(heroiNinoUrl),
+        loadImage(colibriUrl),
       ]);
       if (cancelled) return;
 
@@ -164,7 +166,14 @@ const CertificateModal = ({ open, onClose, nombre, institucion }: Props) => {
       drawBackground(ctx);
 
       const logoS = 370;
-      ctx.drawImage(logo, W - logoS - 260, 275, logoS, logoS);
+      const logoY = 275;
+      const marginX = 260;
+
+      // Colibrí con corona en la parte superior izquierda (simétrico al logo)
+      ctx.drawImage(colibri, marginX, logoY, logoS, logoS);
+
+      // Logo institucional en la parte superior derecha
+      ctx.drawImage(logo, W - logoS - marginX, logoY, logoS, logoS);
 
       const heroH = 440;
       const ninAR = heroina.width / heroina.height;

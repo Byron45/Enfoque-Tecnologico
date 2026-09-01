@@ -117,10 +117,6 @@
   box-shadow: 0 18px 45px rgba(31, 41, 100, .2);
 }
 
-.kids-theme article:hover {
-  box-shadow: 0 24px 55px rgba(236, 72, 153, .2);
-}
-
 /* El logotipo usa un archivo local con el aro naranja completo.
    Se elimina cualquier borde o recorte adicional del contenedor. */
 .kids-theme .mission-logo-frame {

@@ -180,7 +180,7 @@ const KidHub = () => {
         </header>
 
         <section className="grid gap-5 lg:grid-cols-[1.2fr_.8fr]">
-          <article className="rounded-[2.2rem] border-4 border-white bg-white p-5 shadow-[0_22px_65px_rgba(0,0,0,.2)] md:p-7">
+          <article className="flex flex-col justify-center rounded-[2.2rem] border-4 border-white bg-white p-5 shadow-[0_22px_65px_rgba(0,0,0,.2)] md:p-6">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[.2em] text-violet-600">Tu camino de héroe</p>
@@ -188,19 +188,27 @@ const KidHub = () => {
               </div>
               <div className="rounded-2xl bg-yellow-300 p-4 text-yellow-900 shadow-lg"><Star size={34} fill="currentColor" /></div>
             </div>
-            <div className="mt-5 h-6 overflow-hidden rounded-full border-2 border-violet-100 bg-violet-50 shadow-inner">
+            <div className="mt-4 h-6 overflow-hidden rounded-full border-2 border-violet-100 bg-violet-50 shadow-inner">
               <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: .7 }} className="h-full rounded-full bg-gradient-to-r from-orange-500 via-pink-500 to-violet-600" />
             </div>
-            <p className="mt-4 text-sm font-bold text-slate-600">Completa una misión para ganar estrellas y desbloquear la siguiente aventura.</p>
+            <p className="mt-3 text-sm font-bold text-slate-600">Completa una misión para ganar estrellas y desbloquear la siguiente aventura.</p>
           </article>
 
-          <article className="rounded-[2.2rem] border-4 border-white bg-gradient-to-br from-emerald-50 to-cyan-50 p-5 shadow-[0_22px_65px_rgba(0,0,0,.2)] md:p-7">
-            <div className="flex items-start gap-4">
-              <div className="rounded-2xl bg-emerald-500 p-4 text-white shadow-lg"><ShieldCheck size={32} /></div>
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[.2em] text-emerald-700">Consejo del día</p>
-                <h3 className="mt-2 text-2xl font-black text-[#071D4A]">¡Mantén la calma y sigue las señales!</h3>
-                <p className="mt-2 text-sm font-bold leading-relaxed text-slate-600">Aprender antes de una emergencia te ayuda a tomar mejores decisiones.</p>
+          <article className="flex flex-col justify-center rounded-[2.2rem] border-4 border-white bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 p-5 shadow-[0_22px_65px_rgba(0,0,0,.2)] md:p-6">
+            <div className="flex items-center gap-4 md:gap-5">
+              <div className="flex h-16 w-16 md:h-20 md:w-20 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25">
+                <ShieldCheck size={36} className="md:h-10 md:w-10" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="inline-block rounded-full bg-emerald-100/90 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[.2em] text-emerald-800">
+                  Consejo del día
+                </span>
+                <h3 className="mt-1 text-xl md:text-2xl font-black leading-tight text-[#071D4A]">
+                  ¡Mantén la calma y sigue las señales!
+                </h3>
+                <p className="mt-1.5 text-xs md:text-sm font-bold leading-relaxed text-slate-600">
+                  Aprender antes de una emergencia te ayuda a tomar mejores decisiones.
+                </p>
               </div>
             </div>
           </article>
